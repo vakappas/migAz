@@ -1,4 +1,4 @@
-# Classic IaaS to Azure Resource Manager IaaS migration using migAz ASM
+﻿# Classic IaaS to Azure Resource Manager IaaS migration using migAz ASM
 
 This article will show you how to use migAz to migrate or clone classic IaaS solutions to Azure Resource Manager IaaS.
 
@@ -74,37 +74,35 @@ The tool uses Service Management REST API calls to gather all the details on Net
 
 <br>
 
-## Get it
-Download the latest zip file from release folder
-
-## How to use
-
-### Pre-requisites
-1. Windows 8 or Windows Server 2012, or later
-2. .Net Framework 4.0 or higher
-3. Latest [Azure PowerShell Module](https://azure.microsoft.com/en-us/documentation/articles/powershell-install-configure)
-4. Login credentials at source Azure subscription
-5. Login credentials at destination Azure subscription
-
 ### Launch migAz.exe
 
-![migAz main window](./media/virtual-machines-windows-migration-migaz/main.png)
+![migAz main window](./images/main.png)
 
-**Step 1:** Click the “Sign In” button. The “Sign In” button will launch the Azure Authentication page and user has to enter the credentials to access the source subscription.
+**Step 1:** View the options dialog and set MigAz options prior to utilizing MigAz for ARM Template generation.
 
-![migAz main window](./media/virtual-machines-windows-migration-migaz/login.png)
+**Step 2:** From the File Menu, select New Migration -> ASM to ARM.
 
-Post successful authentication the Subscriptions will be loaded.
+![migAz main window](./images/ASMSubscriptionDialog.png)
 
-**Step 2:** Select one of the Subscriptions from the list and wait for the components to completely load. The status bar will show as “Ready” when all the components are loaded.
+Begin by selected the Azure Environment that you are going to authentication to.  Next, click the “Sign In” button to launch the Azure Authentication page and complete the user authentication process against Azure AD using the credentials that have access the source subscription.
 
-**Step 3:** The tool can export the configurations of Virtual Networks, Storage and Virtual Machine. User can select any of them or combination of the resources to export.
+![migAz main window](./images/login.png)
 
-**Step 4:** The Export Objects button will be enabled only after choosing the Output folder. Once the resources are selected and Output Folder is set, user can click on Export Objects.
+If the account used to authenticate to Azure AD has access to multiple subscription, select Azure subscription you would like to use as the ASM (Source) Subscription.  Upon successfully authenticating to Azure AD and selecting your ASM (Source) Subscription, MigAz will begin querying the existing Azure Resources within the subscription.  The status bar will show as “Ready” when all the Azure Resources are loaded for the subscription.
 
-**Step 5:** The Export Objects will then collect all the properties of selected resources and create a JSON Template and a blob details file in the Output Folder selected.
+**Step 3:** If the ARM (Target) Azure Subscription that you want to migrate exported ASM resources into is a different subscription than the ASM (Source) Subscription, click the "Change" button to use select a different subscription available to the Azure AD user account that was used for authentication.
 
-**Step 6:** Once the export completes, click the "Next Steps" tab to generate a customized documentation page showing how to deploy
+![migAz main window](./images/ARMSubscriptionDialog.png)
+
+**Step 4:** The tool can export the configurations of Virtual Networks, Storage and Virtual Machine.  Utilize the ASM Tree View to explore and select the ASM (Source) objects that you want to export into the ARM Template.  User can select any of them or combination of the resources to export.
+
+**Step 5:** Utilize the ARM (Target) Tree View to explorer and revise the ARM (Target) defintion.  Upon selecting an ARM (Target) resource in the Tree View, the ARM Properties pane will present infomation about the selected object.
+
+**Step 6:** Utilize the ARM Properties interface to view and refine ARM Template details prior to generating the ARM Template.
+
+**Step 7:** The Export button will be enabled only after selecting ASM objects for export.  Upon clicking the Export button, MigAz will conduct a pre-export health check and may prompt for required inputs (such as Target Location, missing names, missing target VNet/Subnet/Storage Account, etc.)
+
+**Step 8:** Once the export completes, view the HTML based deployment instructions showing how to deploy
 the template to your Azure environment. Alternatively follow the instructions below to start the deployment of the template using the cmdlet:
 
 
@@ -112,9 +110,9 @@ the template to your Azure environment. Alternatively follow the instructions be
 
 > If virtual machines were included on the export, an error will show up stating that the virtual machines VHDs were not found. This is expected since the blobs haven’t been copied yet to the new storage accounts.
 
-Execute steps 7 to 9 only if virtual machines were included on the export.
+Execute steps 9 to 11 only if virtual machines were included on the export.
 
-**Step 7:** initiate and complete the blob copy of the required OS disks and data disks using BlobCopy.PS1 script
+**Step 9:** initiate and complete the blob copy of the required OS disks and data disks using BlobCopy.PS1 script
 
 > BlobCopy.ps1 script creates temporary snapshots to copy the blobs. This means that it will be able to copy disks from running virtual machines. But, depending on the workload, it can be absolutely required to stop the virtual machine to guarantee data consistency. This is the case, for example, for virtual machines using multiple data disks to create stripped volumes (like storage spaces).
 
@@ -132,17 +130,13 @@ Execute steps 7 to 9 only if virtual machines were included on the export.
 
     .\BlobCopy.ps1 -ResourcegroupName "<Resource Group Name>" -DetailsFilePath "<Full Path of copyblobdetails.JSON>" -StartType CancelBlobCopy
 
-**Step 8:** Once the BlobCopy is completed re-deploy the export.JSON template (step 7) since the VHD’s required for the virtual machines are available now.
+**Step 10:** Once the BlobCopy is completed re-deploy the export.JSON template (step 7) since the VHD’s required for the virtual machines are available now.
 
-**Step 9:** Because the tool creates a Load Balancer matching each Cloud Service, after the migration is complete, you need to change the DNS records that were pointing to the Cloud Service DNS name or IP to point to the new Load Balancer DNS name or IP.
+**Step 11:** Because the tool creates a Load Balancer matching each Cloud Service, after the migration is complete, you need to change the DNS records that were pointing to the Cloud Service DNS name or IP to point to the new Load Balancer DNS name or IP.
 
 ## Tool Options
 
-![migAz options window](./media/virtual-machines-windows-migration-migaz/options.png)
-
-### Uniqueness suffix
-
-When exporting storage accounts and cloud services, the tool appends to the resource name the “uniqueness suffix” string to avoid names conflicts. You have the option to change this uniqueness suffix string.
+![migAz options window](./images/MigAzOptions.png)
 
 ### Build empty environment
 
@@ -160,11 +154,9 @@ If this option is selected, migAz will record the last selected resources per ea
 
 “Allow telemetry collection” is enabled by default. It is used to collect information such as Tenant ID, Subscription ID, Processed Resource Type, Processed Resource Location and the Execution date. This data is collected only to know the tool usage and it will remain only with the development team. You can disable this at any time.
 
-### Azure Environment
+### Azure Resource Manager (ARM) Naming Suffixes
 
-To enable deployment of the ARM template to the new Microsoft National Clouds you can choose from the options windows which cloud you want to use.
-
-![migAz options window](./media/virtual-machines-windows-migration-migaz/options-clouds.png)
+Naming conventions are recommended for your ARM objects.  The values specified in the Suffix fields will be appended as MigAz generates your ARM Template.  The Storage Account suffix must be specified to enable VHD blob copy to a new location that does not conflict with the existing ASM based object.
 
 ## Scenarios
 
@@ -192,55 +184,3 @@ Use “Build empty environment” option to enable this.
 
 ### Storage account names
 As the Storage Accounts supports a maximum of 24 characters in the name, and the tool adds the "uniqueness string" in the target Storage Account name, it is possible that the deployment fails if the name exceeds the limit. In such cases you need to modify the export.JSON and copyblobdetails.JSON to make it 24 characters. This is also true if the target Storage Account name is already in use.
-
-### Troubleshooting
-The detailed logs and output of the REST API are captured in the location %USERPROFILE%\appdata\Local with the file name migAz-&lt;YYYYMMDD&gt;.log and migAz-XML-&lt;YYYYMMDD&gt;.log.
-In case of any issues during the deployment of the export.JSON you need to troubleshoot the template properties and fix the invalid entries. Report any issue on the tool site.
-
-
-## Release Notes
-### v1.4.10.0
-- Fix script samples in generated HTML instructions
-
-### v1.4.9.0
-- Performance improvements, minor fixes to generated resource names
-
-### v1.4.8.0
-- Fix error when exporting a VM that is in a VNET with no subnets defined
-
-### v1.4.7.0
-- New dialog after exporting template that generates instructions on how to deploy to ARM.
-
-### v1.4.6.0
-- Support for VNETs attached to ExpressRoute circuts
-- Fix unit tests
-
-### v1.4.5.0
-- Add Auto Select Dependencies option
-- Add Save Selection feature
-- Fix error when LoadBalancedEndpointSetName have spaces. Remove spaces
-- Correct behavior when new storage account name have more than 24 chars
-
-### v1.4.4.0
-- Add requirement for Azure.Storage and AzureRM.Storage modules to be 2.0.1
-- Add to BloblCopy.ps1 the option to cancel the blobs copy jobs
-- Remove clear screen command from BlobCopy.ps1 bor better results reading
-
-### v1.4.3.0
-- Add ability to export resources deployed on Affinity Groups
-- Prevent exception when VPN Gateway connection shared key is not defined
-
-### v1.4.2.1
-- . Fix reported issue when logging directory does not exist
-
-### v1.4.2.0
-- Process Cloud Services Reserved IPs to Static Public IPs
-- Add tool version and subscription offer categories to telemetry
-- Improvements on typical exceptions handling
-- Minor UI updates
-
-### v1.4.1.1
-- Correcting case where VM disk URL does not end with ".vhd". Not an usual situation, but possible.
-- Add logging when retrieving objects from xml cache
-- Correcting TabIndex for better usability
-- Resetting xml cache when re-login

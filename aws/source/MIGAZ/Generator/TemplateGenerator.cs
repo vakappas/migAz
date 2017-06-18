@@ -22,9 +22,9 @@ namespace MIGAZ.Generator
         private List<CopyBlobDetail> _copyBlobDetails;
         private Dictionary<string, string> _processedItems;
         public Dictionary<string, string> _storageAccountNames;
-        private AwsRetriever _awsRetriever;
         private AwsObjectRetriever _awsObjectRetriever;
   
+
 
         public TemplateGenerator(ILogProvider logProvider, IStatusProvider statusProvider, AwsObjectRetriever awsObjectRetriever, ITelemetryProvider telemetryProvider)
         {

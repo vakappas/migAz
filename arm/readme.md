@@ -66,31 +66,19 @@ The tool uses Resource Manager REST API calls to gather all the details on Netwo
 
 <br>
 
-## Get it
-Download the latest zip file from release folder
-
-## How to use
-
-### Pre-requisites
-1. Windows 8 or Windows Server 2012, or later
-2. .Net Framework 4.0 or higher
-3. Latest [Azure PowerShell Module](https://azure.microsoft.com/en-us/documentation/articles/powershell-install-configure)
-4. Login credentials at source Azure subscription
-5. Login credentials at destination Azure subscription
-
 ### Launch migAz.exe
 
-![migAz main window](./media/virtual-machines-windows-migration-migaz/main.png)
+![migAz main window](./images/main.png)
 
-**Step 1:** Click the ‚ÄúSign In‚Äù button. The ‚ÄúSign In‚Äù button will launch the Azure Authentication page and user has to enter the credentials to access the source subscription.
+**Step 1:** Click the ìSign Inî button. The ìSign Inî button will launch the Azure Authentication page and user has to enter the credentials to access the source subscription.
 
-![migAz main window](./media/virtual-machines-windows-migration-migaz/login.png)
+![migAz main window](./images/login.png)
 
 Post successful authentication the Tenants and the Subscriptions will be loaded.
 
-**Step 2:** Select one of the Tenants from the list and wait for the subscriptions to completely load. The status bar will show as ‚ÄúReady‚Äù when all the subscriptions are loaded.
+**Step 2:** Select one of the Tenants from the list and wait for the subscriptions to completely load. The status bar will show as ìReadyî when all the subscriptions are loaded.
 
-**Step 3:** Select one of the Subscriptions from the list and wait for the components to completely load. The status bar will show as ‚ÄúReady‚Äù when all the components are loaded.
+**Step 3:** Select one of the Subscriptions from the list and wait for the components to completely load. The status bar will show as ìReadyî when all the components are loaded.
 
 **Step 4:** The tool can export the configurations of Virtual Networks, Storage and Virtual Machine. User can select any of them or combination of the resources to export.
 
@@ -104,7 +92,7 @@ the template to your Azure environment. Alternatively follow the instructions be
 
     New-AzureRmResourceGroupDeployment -Name "<Deployment Name>" -ResourceGroupName "<Resource Group Name>" -TemplateFile "<full path of the export.JSON>" -Verbose
 
-> If virtual machines were included on the export, an error will show up stating that the virtual machines VHDs were not found. This is expected since the blobs haven‚Äôt been copied yet to the new storage accounts.
+> If virtual machines were included on the export, an error will show up stating that the virtual machines VHDs were not found. This is expected since the blobs havenít been copied yet to the new storage accounts.
 
 Execute steps 7 to 9 only if virtual machines were included on the export.
 
@@ -126,17 +114,17 @@ Execute steps 7 to 9 only if virtual machines were included on the export.
 
     .\BlobCopy.ps1 -ResourcegroupName "<Resource Group Name>" -DetailsFilePath "<Full Path of copyblobdetails.JSON>" -StartType CancelBlobCopy
 
-**Step 9:** Once the BlobCopy is completed re-deploy the export.JSON template (step 7) since the VHD‚Äôs required for the virtual machines are available now.
+**Step 9:** Once the BlobCopy is completed re-deploy the export.JSON template (step 7) since the VHDís required for the virtual machines are available now.
 
 **Step 10:** Because the tool creates a Load Balancer matching each Cloud Service, after the migration is complete, you need to change the DNS records that were pointing to the Cloud Service DNS name or IP to point to the new Load Balancer DNS name or IP.
 
 ## Tool Options
 
-![migAz options window](./media/virtual-machines-windows-migration-migaz/options.png)
+![migAz options window](./images/options.png)
 
 ### Uniqueness suffix
 
-When exporting storage accounts and loadbalancers, the tool appends to the resource name the ‚Äúuniqueness suffix‚Äù string to avoid names conflicts. You have the option to change this uniqueness suffix string.
+When exporting storage accounts and loadbalancers, the tool appends to the resource name the ìuniqueness suffixî string to avoid names conflicts. You have the option to change this uniqueness suffix string.
 
 ### Build empty environment
 
@@ -152,13 +140,13 @@ If this option is selected, migAz will record the last selected resources per ea
 
 ### Allow telemetry collection
 
-‚ÄúAllow telemetry collection‚Äù is enabled by default. It is used to collect information such as Tenant ID, Subscription ID, Processed Resource Type, Processed Resource Location and the Execution date. This data is collected only to know the tool usage and it will remain only with the development team. You can disable this at any time.
+ìAllow telemetry collectionî is enabled by default. It is used to collect information such as Tenant ID, Subscription ID, Processed Resource Type, Processed Resource Location and the Execution date. This data is collected only to know the tool usage and it will remain only with the development team. You can disable this at any time.
 
 ### Azure Environment
 
 To enable deployment of the ARM template to the new Microsoft National Clouds you can choose from the options windows which cloud you want to use.
 
-![migAz options window](./media/virtual-machines-windows-migration-migaz/options-clouds.png)
+![migAz options window](./images/options-clouds.png)
 
 ## Scenarios
 
@@ -170,7 +158,7 @@ If the migration scenario allows to create a new ARM virtual network with a diff
 You can leverage migAz to help on the migration of servers that do not require data replication, like application servers and web servers.
 
 ### Migration using new virtual network with same address space
-If it‚Äôs not possible to have a new ARM virtual network with a different address space, you will use the tool to migrate all solution virtual machines, but you need to plan for a larger downtime window. The downtime will be as large as the largest virtual machine to migrate (largest = OS disk used space + all data disks used space).
+If itís not possible to have a new ARM virtual network with a different address space, you will use the tool to migrate all solution virtual machines, but you need to plan for a larger downtime window. The downtime will be as large as the largest virtual machine to migrate (largest = OS disk used space + all data disks used space).
 
 Because the tool uses snapshots to copy the blobs, you can use the tool without stopping any virtual machine and test how much downtime you need to plan for the data migration process.
 
@@ -178,18 +166,11 @@ Because the tool uses snapshots to copy the blobs, you can use the tool without 
 Planning and testing are key for a successful migration. The tool enables you to create a full copy of the environment and test it when deployed to ARM. This will allow you to proactively identify any configuration change required during the final migration execution.
 
 ### Clone environment with new virtual machines and data disks
-It‚Äôs entirely possible that you opt for a full redeployment of the solution during the migration to ARM environment. The tool can help you to setup a new environment with similar configuration but with new and empty virtual machines.
+Itís entirely possible that you opt for a full redeployment of the solution during the migration to ARM environment. The tool can help you to setup a new environment with similar configuration but with new and empty virtual machines.
 
-Use ‚ÄúBuild empty environment‚Äù option to enable this.
+Use ìBuild empty environmentî option to enable this.
 
 ## Notes
 
 ### Storage account names
 As the Storage Accounts supports a maximum of 24 characters in the name, and the tool adds the "uniqueness string" in the target Storage Account name, it is possible that the deployment fails if the name exceeds the limit. In such cases you need to modify the export.JSON and copyblobdetails.JSON to make it 24 characters. This is also true if the target Storage Account name is already in use.
-
-### Troubleshooting
-The detailed logs and output of the REST API are captured in the location %USERPROFILE%\appdata\Local\MigAz with the file name migAz-<YYYYMMDD>.log and migAz-JSON-<YYYYMMDD>.log.
-In case of any issues during the deployment of the export.JSON you need to troubleshoot the template properties and fix the invalid entries. Report any issue on the tool site.
-
-
-## Release Notes

@@ -30,7 +30,6 @@ namespace MIGAZ
 
         //private string subscriptionid;
         //private Dictionary<string, string> subscriptionsAndTenants;
-        private AwsRetriever _awsRetriever;
         private TemplateGenerator _templateGenerator;
         private ISaveSelectionProvider _saveSelectionProvider;
         private IStatusProvider _statusProvider;

@@ -128,7 +128,6 @@
       <DependentUpon>Window.cs</DependentUpon>
     </Compile>
     <Compile Include="Generator\AwsObjectRetriever.cs" />
-    <Compile Include="Generator\AwsRetriever.cs" />
     <Compile Include="Generator\CloudTelemetryProvider.cs" />
     <Compile Include="Generator\FileLogProvider.cs" />
     <Compile Include="Generator\ILogProvider.cs" />

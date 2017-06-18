@@ -1,4 +1,4 @@
-# AWS EC2 instances to Azure Resource Manager IaaS migration using migAz AWS
+﻿# AWS EC2 instances to Azure Resource Manager IaaS migration using migAz AWS
 
 This article will show you how to use migAz AWS to migrate or clone AWS EC2 Virtual Machines  to Azure Resource Manager IaaS.
 
@@ -50,25 +50,13 @@ The tool uses AWS .net SDK to gather all the details on VPC and EC2 instance rel
 
 <br>
 
-## Get it
-Download the latest zip file from release folder
-
-## How to use
-
-### Pre-requisites
-1. Windows 8 or Windows Server 2012, or later
-2. .Net Framework 4.0 or higher
-3. Latest [Azure PowerShell Module](https://azure.microsoft.com/en-us/documentation/articles/powershell-install-configure)
-4. Login credentials at source Azure subscription
-5. Login credentials at destination Azure subscription
-
 ### Launch migAz.exe
 
-![migAz main window](./media/virtual-machines-windows-migration-migaz/main.png)
+![migAz main window](./images/main.png)
 
 **Step 1:** Click the “Sign In” button. The “Sign In” button will launch the Authentication page and user has to enter the AWS Access Key ID and the AWS Secret Access Key. ([get AWS Access Key](https://aws.amazon.com/developers/access-keys/))
 
-![migAz main window](./media/virtual-machines-windows-migration-migaz/login.png)
+![migAz main window](./images/login.png)
 
 Post successful authentication the Regions are loaded with the respective VPC and EC2 instance details.
 
@@ -119,7 +107,7 @@ Execute steps 7 to 11 only if virtual machines were included on the export.
 
 ## Tool Options
 
-![migAz options window](./media/virtual-machines-windows-migration-migaz/options.png)
+![migAz options window](./images/options.png)
 
 ### Uniqueness suffix
 
