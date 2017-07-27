@@ -12,6 +12,7 @@ using MigAz.Core;
 using MigAz.Forms;
 using MigAz.Azure.UserControls;
 using System.Xml;
+using System.Net;
 
 namespace MigAz.Migrators
 {
@@ -256,7 +257,7 @@ namespace MigAz.Migrators
 
         private async Task AlertIfNewVersionAvailable()
         {
-            string currentVersion = "2.2.11.0";
+            string currentVersion = "2.2.12.0";
             VersionCheck versionCheck = new VersionCheck(this.LogProvider);
             string newVersionNumber = await versionCheck.GetAvailableVersion("https://api.migaz.tools/v1/version", currentVersion);
             if (versionCheck.IsVersionNewer(currentVersion, newVersionNumber))
@@ -997,6 +998,20 @@ namespace MigAz.Migrators
                 }
                 catch (Exception exc)
                 {
+                    if (exc.GetType() == typeof(System.Net.WebException))
+                    {
+                        System.Net.WebException webException = (System.Net.WebException) exc;
+                        if (webException.Response != null)
+                        {
+                            HttpWebResponse exceptionResponse = (HttpWebResponse)webException.Response;
+                            if (exceptionResponse.StatusCode == HttpStatusCode.Forbidden)
+                            {
+                                ASM403ForbiddenExceptionDialog forbiddenDialog = new ASM403ForbiddenExceptionDialog(this.LogProvider, exc);
+                                return;
+                            }
+                        }
+                    }
+
                     UnhandledExceptionDialog exceptionDialog = new UnhandledExceptionDialog(this.LogProvider, exc);
                     exceptionDialog.ShowDialog();
                 }

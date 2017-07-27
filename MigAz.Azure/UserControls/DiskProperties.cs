@@ -18,7 +18,7 @@ namespace MigAz.Azure.UserControls
         TargetTreeView _TargetTreeView;
         private AzureContext _AzureContext;
         private Azure.MigrationTarget.Disk _TargetDisk;
-
+        private bool _ShowSizeInGb = true;
         public delegate Task AfterPropertyChanged();
         public event AfterPropertyChanged PropertyChanged;
 
@@ -44,6 +44,21 @@ namespace MigAz.Azure.UserControls
             }
         }
 
+        public bool ShowSizeInGb
+        {
+            get
+            {
+                return _ShowSizeInGb;
+            }
+            set
+            {
+                _ShowSizeInGb = value;
+
+                lblSourceSizeGb.Visible = _ShowSizeInGb;
+                txtTargetSize.Visible = _ShowSizeInGb;
+            }
+        }
+
         public IStorageAccount TargetStorageAccount
         {
             get
@@ -64,7 +79,7 @@ namespace MigAz.Azure.UserControls
             BindCommon();
         }
 
-        private void BindCommon()
+        private async Task BindCommon()
         {
             if (AllowManangedDisk)
                 rbManagedDisk.Checked = true;
@@ -87,9 +102,12 @@ namespace MigAz.Azure.UserControls
                 lblLUN.Text = _TargetDisk.Lun.ToString();
                 txtTargetDiskName.Text = _TargetDisk.TargetName;
                 txtBlobName.Text = _TargetDisk.TargetStorageAccountBlob;
+                txtTargetSize.Text = _TargetDisk.DiskSizeInGB.ToString();
 
                 if (_TargetDisk.SourceDisk != null)
                 {
+                    lblSourceSizeGb.Text = _TargetDisk.SourceDisk.DiskSizeGb.ToString();
+
                     if (_TargetDisk.SourceDisk.GetType() == typeof(Azure.Asm.Disk))
                     {
                         Azure.Asm.Disk asmDisk = (Azure.Asm.Disk)_TargetDisk.SourceDisk;
@@ -103,6 +121,27 @@ namespace MigAz.Azure.UserControls
                             lblAsmStorageAccount.Text = armDisk.SourceStorageAccount.Name;
                     }
                 }
+            }
+
+            try
+            {
+                if (_TargetTreeView.TargetResourceGroup != null && _TargetTreeView.TargetResourceGroup.TargetLocation != null)
+                {
+                    rbExistingARMStorageAccount.Text = "Existing Storage in " + _TargetTreeView.TargetResourceGroup.TargetLocation.DisplayName;
+                    List<Azure.Arm.StorageAccount> a = await _AzureContext.AzureRetriever.GetAzureARMStorageAccounts(_TargetTreeView.TargetResourceGroup.TargetLocation);
+                    rbExistingARMStorageAccount.Enabled = a.Count() > 0;
+                }
+                else
+                {
+                    // Cannot use existing ARM Storage without Target Location
+                    rbExistingARMStorageAccount.Enabled = false;
+                    rbExistingARMStorageAccount.Visible = false;
+                }
+            }
+            catch (Exception exc)
+            {
+                _AzureContext.LogProvider.WriteLog("DiskProperties.BindCommon", exc.Message);
+                rbExistingARMStorageAccount.Enabled = false;
             }
         }
 
@@ -253,6 +292,24 @@ namespace MigAz.Azure.UserControls
             {
                 e.Handled = true;
             }
+        }
+
+        private void txtTargetSize_TextChanged(object sender, EventArgs e)
+        {
+            Int32 targetSizeInGb = -1;
+            Int32.TryParse(txtTargetSize.Text, out targetSizeInGb);
+
+            try
+            {
+                _TargetDisk.DiskSizeInGB = targetSizeInGb;
+            }
+            catch (Exception exc)
+            {
+                _TargetDisk.DiskSizeInGB = 0;
+                _AzureContext.LogProvider.WriteLog("txtTargetSize_TextChanged", exc.Message);
+            }
+
+            PropertyChanged();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace MigAz.Azure.MigrationTarget
             _Source = source;
             this.TargetName = source.Name;
             this.AccountType = source.AccountType;
-            this._BlobStorageNamespace = AzureServiceUrls.GetBlobEndpointUrl(azureContext.AzureEnvironment);
+            this._BlobStorageNamespace = azureContext.AzureServiceUrls.GetBlobEndpointUrl();
         }
 
         public string TargetName

@@ -74,7 +74,7 @@ namespace MigAz.Azure.UserControls
 
                 if (_LoadBalancer.FrontEndIpConfigurations.Count > 0)
                 {
-                    await networkSelectionControl1.Bind(_AzureContext, _TargetTreeView.GetVirtualNetworksInMigration());
+                    await networkSelectionControl1.Bind(_AzureContext, _TargetTreeView, _TargetTreeView.GetVirtualNetworksInMigration());
                     networkSelectionControl1.VirtualNetworkTarget = _LoadBalancer.FrontEndIpConfigurations[0];
                 }
             }

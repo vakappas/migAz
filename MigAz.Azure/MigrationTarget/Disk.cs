@@ -11,7 +11,7 @@ namespace MigAz.Azure.MigrationTarget
     public class Disk : IMigrationTarget
     {
         private string _TargetName = String.Empty;
-
+        private Int32 _DiskSizeInGB = 0;
 
         private Disk() { }
 
@@ -21,7 +21,7 @@ namespace MigAz.Azure.MigrationTarget
             this.TargetName = sourceDisk.DiskName;
             this.Lun = sourceDisk.Lun;
             this.HostCaching = sourceDisk.HostCaching;
-            this.DiskSizeInGB = sourceDisk.DiskSizeInGB;
+            this.DiskSizeInGB = sourceDisk.DiskSizeGb;
             this.TargetStorageAccountBlob = sourceDisk.StorageAccountBlob;
             this.SourceStorageAccount = sourceDisk.SourceStorageAccount;
         }
@@ -79,9 +79,19 @@ namespace MigAz.Azure.MigrationTarget
             get;set;
         }
 
-        public Int64? DiskSizeInGB
+        public Int32 DiskSizeInGB
         {
-            get; set;
+            get { return _DiskSizeInGB; }
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentException("DiskSizeInGB cannot be negative.");
+
+                if (value > 1023)
+                    throw new ArgumentException("DiskSizeInGB cannot be greater than 1023.");
+                
+                _DiskSizeInGB = value;
+            }
         }
 
 

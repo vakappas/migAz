@@ -36,17 +36,17 @@ namespace MigAz.Tests.Fakes
             return new List<AzureSubscription>();
         }
 
-        public Task<AuthenticationResult> LoginAzureProvider(AzureEnvironment azureEnvironment)
+        public Task<AuthenticationResult> LoginAzureProvider()
         {
             return null;
         }
 
-        public Task<AuthenticationResult> GetGraphToken(AzureEnvironment azureEnvironment, string v)
+        public Task<AuthenticationResult> GetGraphToken(string v)
         {
             return null;
         }
 
-        public Task<AuthenticationResult> GetAzureToken(AzureEnvironment azureEnvironment, string v)
+        public Task<AuthenticationResult> GetAzureToken(string v)
         {
             return null;
         }

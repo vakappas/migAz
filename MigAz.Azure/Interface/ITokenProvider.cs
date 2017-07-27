@@ -13,8 +13,8 @@ namespace MigAz.Azure.Interface
         // Task<List<AzureSubscription>> GetSubscriptions();
         Task<AuthenticationResult> GetToken(AzureSubscription azureSubscription);
         //Task<AuthenticationResult> GetCommonToken(string azureEnvironment);
-        Task<AuthenticationResult> LoginAzureProvider(AzureEnvironment azureEnvironment);
-        Task<AuthenticationResult> GetGraphToken(AzureEnvironment azureEnvironment, string v);
-        Task<AuthenticationResult> GetAzureToken(AzureEnvironment azureEnvironment, string v);
+        Task<AuthenticationResult> LoginAzureProvider();
+        Task<AuthenticationResult> GetGraphToken(string v);
+        Task<AuthenticationResult> GetAzureToken(string v);
     }
 }

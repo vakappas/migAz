@@ -286,6 +286,15 @@ namespace MigAz.Azure.Generator
                     this.AddAlert(AlertType.Error, "Target Storage Account for Virtual Machine '" + virtualMachine.ToString() + "' OS Disk must be specified.", virtualMachine);
                 else
                 {
+                    if (virtualMachine.OSVirtualHardDisk.SourceDisk != null && virtualMachine.OSVirtualHardDisk.SourceDisk.GetType() == typeof(Azure.Arm.Disk))
+                    {
+                        Azure.Arm.Disk sourceDisk = (Azure.Arm.Disk) virtualMachine.OSVirtualHardDisk.SourceDisk;
+                        if (sourceDisk.IsEncrypted)
+                        {
+                            this.AddAlert(AlertType.Error, "OS Disk for Virtual Machine '" + virtualMachine.ToString() + "' is encrypted.  MigAz does not contain support for moving encrypted Azure Compute VMs.", virtualMachine);
+                        }
+                    }
+
                     if (virtualMachine.OSVirtualHardDisk.TargetStorageAccount.GetType() == typeof(Azure.MigrationTarget.StorageAccount))
                     {
                         Azure.MigrationTarget.StorageAccount targetStorageAccount = (Azure.MigrationTarget.StorageAccount)virtualMachine.OSVirtualHardDisk.TargetStorageAccount;
@@ -307,6 +316,18 @@ namespace MigAz.Azure.Generator
 
                 foreach (MigrationTarget.Disk dataDisk in virtualMachine.DataDisks)
                 {
+                    if (dataDisk.DiskSizeInGB == 0)
+                        this.AddAlert(AlertType.Error, "Data Disk '" + dataDisk.ToString() + "' for Virtual Machine '" + virtualMachine.ToString() + "' does not have a Disk Size (in GB) defined.  Disk Size (not to exceed 1023) is required.", dataDisk);
+
+                    if (dataDisk.SourceDisk != null && dataDisk.SourceDisk.GetType() == typeof(Azure.Arm.Disk))
+                    {
+                        Azure.Arm.Disk sourceDisk = (Azure.Arm.Disk)virtualMachine.OSVirtualHardDisk.SourceDisk;
+                        if (sourceDisk.IsEncrypted)
+                        {
+                            this.AddAlert(AlertType.Error, "Data Disk '" + dataDisk.ToString() + "' for Virtual Machine '" + virtualMachine.ToString() + "' is encrypted.  MigAz does not contain support for moving encrypted Azure Compute VMs.", dataDisk);
+                        }
+                    }
+
                     if (dataDisk.TargetStorageAccount == null)
                     {
                         this.AddAlert(AlertType.Error, "Target Storage Account for Virtual Machine '" + virtualMachine.ToString() + "' Data Disk '" + dataDisk.ToString() + "' must be specified.", dataDisk);
@@ -1287,8 +1308,7 @@ namespace MigAz.Azure.Generator
                     DataDisk datadisk = new DataDisk();
                     datadisk.name = dataDisk.ToString();
                     datadisk.caching = dataDisk.HostCaching;
-                    if (dataDisk.DiskSizeInGB != null)
-                        datadisk.diskSizeGB = dataDisk.DiskSizeInGB.Value;
+                    datadisk.diskSizeGB = dataDisk.DiskSizeInGB;
                     if (dataDisk.Lun.HasValue)
                         datadisk.lun = dataDisk.Lun.Value;
 
@@ -1424,13 +1444,72 @@ namespace MigAz.Azure.Generator
             LogProvider.WriteLog("BuildStorageAccountObject", "End");
         }
 
+        private bool HasNewStorageAccounts
+        {
+            get
+            {
+                return _ExportArtifacts.StorageAccounts.Count > 0;
+            }
+        }
+
+        private bool HasBlobCopyDetails
+        {
+            get
+            {
+                return _CopyBlobDetails.Count > 0;
+            }
+        }
+
+
+
         public async Task SerializeStreams()
         {
-            LogProvider.WriteLog("SerializeStreams", "Start Template Stream Update");
+            LogProvider.WriteLog("SerializeStreams", "Start");
 
             TemplateStreams.Clear();
 
-            await UpdateExportJsonStream();
+            await SerializeDeploymentInstructions();
+
+            if (HasNewStorageAccounts && HasBlobCopyDetails) // If there are new storage accounts and we have vhd blobs involved in the migration to copy
+            {
+                await SerializeStorageAccounts(); // Serialize a seperate tempalte with just new Storage Accounts to faciliate Blob Copy
+            }
+
+            if (HasBlobCopyDetails)
+            {
+                await SerializeBlobCopyDetails(); // Serialize blob copy details
+            }
+
+            await SerializeExportTemplate();
+
+            StatusProvider.UpdateStatus("Ready");
+
+            LogProvider.WriteLog("SerializeStreams", "End");
+        }
+
+        private async Task SerializeStorageAccounts()
+        {
+            LogProvider.WriteLog("SerializeStorageAccounts", "Start storageaccounts.json");
+
+            if (_ExportArtifacts.StorageAccounts.Count > 0)
+            {
+                StatusProvider.UpdateStatus("BUSY:  Generating storageaccounts.json");
+                LogProvider.WriteLog("SerializeStreams", "Start storageaccounts.json stream");
+
+                String templateString = await GetStorageAccountTemplateString();
+                ASCIIEncoding asciiEncoding = new ASCIIEncoding();
+                byte[] a = asciiEncoding.GetBytes(templateString);
+                MemoryStream templateStream = new MemoryStream();
+                await templateStream.WriteAsync(a, 0, a.Length);
+                TemplateStreams.Add("storageaccounts.json", templateStream);
+            }
+
+            LogProvider.WriteLog("SerializeStorageAccounts", "End storageaccounts.json");
+        }
+
+        private async Task SerializeBlobCopyDetails()
+        {
+            LogProvider.WriteLog("SerializeBlobCopyDetails", "Start");
 
             ASCIIEncoding asciiEncoding = new ASCIIEncoding();
 
@@ -1443,11 +1522,36 @@ namespace MigAz.Azure.Generator
                 string jsontext = JsonConvert.SerializeObject(this._CopyBlobDetails, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings { NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore });
                 byte[] b = asciiEncoding.GetBytes(jsontext);
                 MemoryStream copyBlobDetailStream = new MemoryStream();
-                copyBlobDetailStream.Write(b, 0, b.Length);
+                await copyBlobDetailStream.WriteAsync(b, 0, b.Length);
                 TemplateStreams.Add("copyblobdetails.json", copyBlobDetailStream);
 
                 LogProvider.WriteLog("SerializeStreams", "End copyblobdetails.json stream");
             }
+
+            LogProvider.WriteLog("SerializeBlobCopyDetails", "End");
+        }
+
+        private async Task SerializeExportTemplate()
+        {
+            LogProvider.WriteLog("SerializeExportTemplate", "Start");
+
+            StatusProvider.UpdateStatus("BUSY:  Generating export.json");
+
+            String templateString = await GetTemplateString();
+            ASCIIEncoding asciiEncoding = new ASCIIEncoding();
+            byte[] a = asciiEncoding.GetBytes(templateString);
+            MemoryStream templateStream = new MemoryStream();
+            await templateStream.WriteAsync(a, 0, a.Length);
+            TemplateStreams.Add("export.json", templateStream);
+
+            LogProvider.WriteLog("SerializeExportTemplate", "End");
+        }
+
+        private async Task SerializeDeploymentInstructions()
+        {
+            LogProvider.WriteLog("SerializeDeploymentInstructions", "Start");
+
+            ASCIIEncoding asciiEncoding = new ASCIIEncoding();
 
             StatusProvider.UpdateStatus("BUSY:  Generating DeployInstructions.html");
             LogProvider.WriteLog("SerializeStreams", "Start DeployInstructions.html stream");
@@ -1468,9 +1572,7 @@ namespace MigAz.Azure.Generator
 
             if (this.TargetSubscription != null)
             {
-
                 subscriptionSwitch = " -SubscriptionId '" + this.TargetSubscription.SubscriptionId + "'";
-
 
                 if (this.TargetSubscription.AzureEnvironment != AzureEnvironment.AzureCloud)
                     azureEnvironmentSwitch = " -EnvironmentName " + this.TargetSubscription.AzureEnvironment.ToString();
@@ -1480,7 +1582,6 @@ namespace MigAz.Azure.Generator
                 if (this.TargetSubscription.AzureAdTenantId != Guid.Empty)
                     tenantSwitch = " -TenantId '" + this.TargetSubscription.AzureAdTenantId.ToString() + "'";
             }
-
 
             instructionContent = instructionContent.Replace("{migAzAzureEnvironmentSwitch}", azureEnvironmentSwitch);
             instructionContent = instructionContent.Replace("{tenantSwitch}", tenantSwitch);
@@ -1494,13 +1595,10 @@ namespace MigAz.Azure.Generator
 
             byte[] c = asciiEncoding.GetBytes(instructionContent);
             MemoryStream instructionStream = new MemoryStream();
-            instructionStream.Write(c, 0, c.Length);
+            await instructionStream.WriteAsync(c, 0, c.Length);
             TemplateStreams.Add("DeployInstructions.html", instructionStream);
 
-            LogProvider.WriteLog("SerializeStreams", "End DeployInstructions.html stream");
-
-            LogProvider.WriteLog("SerializeStreams", "End Template Stream Update");
-            StatusProvider.UpdateStatus("Ready");
+            LogProvider.WriteLog("SerializeDeploymentInstructions", "End");
         }
 
         public string GetCopyBlobDetailPath()
@@ -1519,27 +1617,35 @@ namespace MigAz.Azure.Generator
             return Path.Combine(this.OutputDirectory, "DeployInstructions.html");
         }
 
-        private async Task UpdateExportJsonStream()
-        {
-            StatusProvider.UpdateStatus("BUSY:  Generating export.json");
-            LogProvider.WriteLog("UpdateArtifacts", "Start export.json stream");
-
-            String templateString = await GetTemplateString();
-            ASCIIEncoding asciiEncoding = new ASCIIEncoding();
-            byte[] a = asciiEncoding.GetBytes(templateString);
-            MemoryStream templateStream = new MemoryStream();
-            templateStream.Write(a, 0, a.Length);
-            TemplateStreams.Add("export.json", templateStream);
-
-            LogProvider.WriteLog("UpdateArtifacts", "End export.json stream");
-        }
-
         public async Task<string> GetTemplateString()
         {
             Template template = new Template()
             {
                 resources = this.Resources,
                 parameters = this.Parameters
+            };
+
+            // save JSON template
+            string jsontext = JsonConvert.SerializeObject(template, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings { NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore });
+            jsontext = jsontext.Replace("schemalink", "$schema");
+
+            return jsontext;
+        }
+        public async Task<string> GetStorageAccountTemplateString()
+        {
+            List<ArmResource> storageAccountResources = new List<ArmResource>();
+            foreach (ArmResource armResource in this.Resources)
+            {
+                if (armResource.GetType() == typeof(MigAz.Core.ArmTemplate.StorageAccount))
+                {
+                    storageAccountResources.Add(armResource);
+                }
+            }
+
+            Template template = new Template()
+            {
+                resources = storageAccountResources,
+                parameters = new Dictionary<string, Parameter>()
             };
 
             // save JSON template

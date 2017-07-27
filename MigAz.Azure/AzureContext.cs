@@ -9,6 +9,8 @@ namespace MigAz.Azure
     public class AzureContext
     {
         private AzureEnvironment _AzureEnvironment = AzureEnvironment.AzureCloud;
+        private AzureServiceUrls _AzureServiceUrls;
+
         private AzureTenant _AzureTenant;
         private AzureSubscription _AzureSubscription;
         private AzureRetriever _AzureRetriever;
@@ -50,13 +52,19 @@ namespace MigAz.Azure
             _LogProvider = logProvider;
             _StatusProvider = statusProvider;
             _SettingsProvider = settingsProvider;
-            _TokenProvider = new AzureTokenProvider(_LogProvider);
+            _AzureServiceUrls = new AzureServiceUrls(this);
+            _TokenProvider = new AzureTokenProvider(this);
             _AzureRetriever = new AzureRetriever(this);
         }
 
         #endregion
 
         #region Properties
+
+        public AzureServiceUrls AzureServiceUrls
+        {
+            get { return _AzureServiceUrls; }
+        }
 
         public AzureEnvironment AzureEnvironment
         {
@@ -125,7 +133,7 @@ namespace MigAz.Azure
 
         public async Task Login()
         {
-            await this.TokenProvider.LoginAzureProvider(this.AzureEnvironment);
+            await this.TokenProvider.LoginAzureProvider();
             UserAuthenticated?.Invoke(this);
         }
 

@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using MigAz.Core.ArmTemplate;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using MigAz.Azure.Interface;
 
 namespace MigAz.Azure
 {
@@ -693,6 +694,22 @@ namespace MigAz.Azure
             return virtualNetworks;
         }
 
+        public async Task<List<Arm.VirtualNetwork>> GetAzureARMVirtualNetworks(ILocation azureLocation)
+        {
+            List<Arm.VirtualNetwork> virtualNetworks = new List<Arm.VirtualNetwork>();
+
+            foreach (ResourceGroup resourceGroup in await this.GetAzureARMResourceGroups())
+            {
+                foreach (Arm.VirtualNetwork virtualNetwork in await this.GetAzureARMVirtualNetworks(resourceGroup))
+                {
+                    if (virtualNetwork.Location == azureLocation.Name)
+                        virtualNetworks.Add(virtualNetwork);
+                }
+            }
+
+            return virtualNetworks;
+        }
+
         public async virtual Task<List<Arm.VirtualNetwork>> GetAzureARMVirtualNetworks(Arm.ResourceGroup resourceGroup)
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMVirtualNetworks", "Start - '" + resourceGroup.ToString() + "' Resource Group");
@@ -766,6 +783,22 @@ namespace MigAz.Azure
             return storageAccounts;
         }
 
+        public async virtual Task<List<Arm.StorageAccount>> GetAzureARMStorageAccounts(ILocation azureLocation)
+        {
+            List<Arm.StorageAccount> storageAccounts = new List<Arm.StorageAccount>();
+
+            foreach (ResourceGroup resourceGroup in await this.GetAzureARMResourceGroups())
+            {
+                foreach (Arm.StorageAccount storageAccount in await this.GetAzureARMStorageAccounts(resourceGroup))
+                {
+                    if (storageAccount.Location == azureLocation.Name)
+                        storageAccounts.Add(storageAccount);
+                }
+            }
+
+            return storageAccounts;
+        }
+
         public async virtual Task<List<Arm.StorageAccount>> GetAzureARMStorageAccounts(Arm.ResourceGroup resourceGroup)
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMStorageAccounts", "Start - '" + resourceGroup.ToString() + "' Resource Group");
@@ -782,7 +815,7 @@ namespace MigAz.Azure
 
             foreach (var storageAccount in storageAccounts)
             {
-                Arm.StorageAccount armStorageAccount = new Arm.StorageAccount(storageAccount, _AzureContext.AzureEnvironment);
+                Arm.StorageAccount armStorageAccount = new Arm.StorageAccount(storageAccount, _AzureContext);
                 armStorageAccount.ResourceGroup = await this.GetAzureARMResourceGroup(armStorageAccount.Id);
                 _AzureContext.LogProvider.WriteLog("GetAzureARMVirtualNetworks", "Loaded ARM Storage Account '" + armStorageAccount.Name + "'.");
                 _AzureContext.StatusProvider.UpdateStatus("Loaded ARM Storage Account '" + armStorageAccount.Name + "'.");
@@ -1144,80 +1177,80 @@ namespace MigAz.Azure
             switch (resourceType)
             {
                 case "Subscriptions":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + "subscriptions";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Subscriptions...");
                     break;
                 case "VirtualNetworks":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/virtualnetwork";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/virtualnetwork";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Virtual Networks for Subscription ID : " + _AzureSubscription.SubscriptionId + "...");
                     break;
                 case "ClientRootCertificates":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/" + info["virtualnetworkname"] + "/gateway/clientrootcertificates";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/" + info["virtualnetworkname"] + "/gateway/clientrootcertificates";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Client Root Certificates for Virtual Network : " + info["virtualnetworkname"] + "...");
                     break;
                 case "ClientRootCertificate":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/" + info["virtualnetworkname"] + "/gateway/clientrootcertificates/" + info["thumbprint"];
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/" + info["virtualnetworkname"] + "/gateway/clientrootcertificates/" + info["thumbprint"];
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting certificate data for certificate : " + info["thumbprint"] + "...");
                     break;
                 case "NetworkSecurityGroup":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/networksecuritygroups/" + info["name"] + "?detaillevel=Full";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/networksecuritygroups/" + info["name"] + "?detaillevel=Full";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Network Security Group : " + info["name"] + "...");
                     break;
                 case "NetworkSecurityGroups":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/networksecuritygroups";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/networksecuritygroups";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Network Security Groups");
                     break;
                 case "RouteTable":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/routetables/" + info["name"] + "?detailLevel=full";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/routetables/" + info["name"] + "?detailLevel=full";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Route Table : " + info["routetablename"] + "...");
                     break;
                 case "NSGSubnet":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/virtualnetwork/" + info["virtualnetworkname"] + "/subnets/" + info["subnetname"] + "/networksecuritygroups";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/virtualnetwork/" + info["virtualnetworkname"] + "/subnets/" + info["subnetname"] + "/networksecuritygroups";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting NSG for subnet " + info["subnetname"] + "...");
                     break;
                 case "VirtualNetworkGateway":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/" + info["virtualnetworkname"] + "/gateway";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/" + info["virtualnetworkname"] + "/gateway";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Virtual Network Gateway : " + info["virtualnetworkname"] + "...");
                     break;
                 case "VirtualNetworkGatewaySharedKey":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/" + info["virtualnetworkname"] + "/gateway/connection/" + info["localnetworksitename"] + "/sharedkey";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/" + info["virtualnetworkname"] + "/gateway/connection/" + info["localnetworksitename"] + "/sharedkey";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Virtual Network Gateway Shared Key: " + info["localnetworksitename"] + "...");
                     break;
                 case "StorageAccounts":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/storageservices";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/storageservices";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Storage Accounts for Subscription ID : " + _AzureSubscription.SubscriptionId + "...");
                     break;
                 case "StorageAccount":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/storageservices/" + info["name"];
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/storageservices/" + info["name"];
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Storage Account '" + info["name"] + " ' for Subscription ID : " + _AzureSubscription.SubscriptionId + "...");
                     break;
                 case "StorageAccountKeys":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/storageservices/" + info["name"] + "/keys";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/storageservices/" + info["name"] + "/keys";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Storage Account '" + info["name"] + "' Keys.");
                     break;
                 case "CloudServices":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/hostedservices";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/hostedservices";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Cloud Services for Subscription ID : " + _AzureSubscription.SubscriptionId + "...");
                     break;
                 case "CloudService":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/hostedservices/" + info["name"] + "?embed-detail=true";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/hostedservices/" + info["name"] + "?embed-detail=true";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Virtual Machines for Cloud Service : " + info["name"] + "...");
                     break;
                 case "VirtualMachine":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/hostedservices/" + info["cloudservicename"] + "/deployments/" + info["deploymentname"] + "/roles/" + info["virtualmachinename"];
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/hostedservices/" + info["cloudservicename"] + "/deployments/" + info["deploymentname"] + "/roles/" + info["virtualmachinename"];
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Virtual Machine '" + info["virtualmachinename"] + "' for Cloud Service '" + info["virtualmachinename"] + "'");
                     break;
                 case "VMImages":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/images";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/images";
                     break;
                 case "ReservedIPs":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/services/networking/reservedips";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/services/networking/reservedips";
                     break;
                 case "AffinityGroup":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/affinitygroups/" + info["affinitygroupname"];
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/affinitygroups/" + info["affinitygroupname"];
                     break;
                 case "Locations":
-                    url = AzureServiceUrls.GetASMServiceManagementUrl(this._AzureContext.AzureEnvironment) + _AzureSubscription.SubscriptionId + "/locations";
+                    url = _AzureContext.AzureServiceUrls.GetASMServiceManagementUrl() + _AzureSubscription.SubscriptionId + "/locations";
                     break;
                 default:
                     throw new ArgumentException("Unknown ResourceType: " + resourceType);
@@ -1250,25 +1283,25 @@ namespace MigAz.Azure
             switch (resourceType)
             {
                 case "Tenants":
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "tenants?api-version=2015-01-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "tenants?api-version=2015-01-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Tenants...");
                     break;
                 case "Domains": // todo, move to a graph class?
-                    url = AzureServiceUrls.GetGraphApiUrl(this._AzureContext.AzureEnvironment) + "myorganization/domains?api-version=1.6";
+                    url = _AzureContext.AzureServiceUrls.GetGraphApiUrl() + "myorganization/domains?api-version=1.6";
                     useCached = false;
 
-                    AuthenticationResult tenantAuthenticationResult = await _AzureContext.TokenProvider.GetGraphToken(this._AzureContext.AzureEnvironment, info["tenantId"].ToString());
+                    AuthenticationResult tenantAuthenticationResult = await _AzureContext.TokenProvider.GetGraphToken(info["tenantId"].ToString());
                     if (tenantAuthenticationResult != null)
                         accessToken = tenantAuthenticationResult.AccessToken;
 
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Tenant Domain details from Graph...");
                     break;
                 case "Subscriptions":
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions?api-version=2015-01-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions?api-version=2015-01-01";
 
                     if (info != null && info["tenantId"] != null)
                     {
-                        AuthenticationResult subscriptionAuthenticationResult = await _AzureContext.TokenProvider.GetAzureToken(this._AzureContext.AzureEnvironment, info["tenantId"].ToString());
+                        AuthenticationResult subscriptionAuthenticationResult = await _AzureContext.TokenProvider.GetAzureToken(info["tenantId"].ToString());
                         if (subscriptionAuthenticationResult != null)
                             accessToken = subscriptionAuthenticationResult.AccessToken;
 
@@ -1279,69 +1312,69 @@ namespace MigAz.Azure
                     break;
                 case "ResourceGroups":
                     // https://docs.microsoft.com/en-us/rest/api/resources/resourcegroups#ResourceGroups_List
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourcegroups?api-version=2016-09-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourcegroups?api-version=2016-09-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Resource Groups...");
                     break;
                 case "Locations":
                     // https://docs.microsoft.com/en-us/rest/api/resources/subscriptions#Subscriptions_ListLocations
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + ArmConst.Locations + "?api-version=2016-06-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + ArmConst.Locations + "?api-version=2016-06-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Azure Locations for Subscription ID : " + _AzureSubscription.SubscriptionId + "...");
                     break;
                 case "AvailabilitySets":
                     // https://docs.microsoft.com/en-us/rest/api/compute/availabilitysets/availabilitysets-list-subscription
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderAvailabilitySets + "?api-version=2017-03-30";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderAvailabilitySets + "?api-version=2017-03-30";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Availability Sets for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "VirtualNetworks":
                     // https://msdn.microsoft.com/en-us/library/azure/mt163557.aspx
                     // https://docs.microsoft.com/en-us/rest/api/network/list-virtual-networks-within-a-subscription
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderVirtualNetwork + "?api-version=2016-12-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderVirtualNetwork + "?api-version=2016-12-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Virtual Networks for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "VirtualNetworkGateways":
                     // https://docs.microsoft.com/en-us/rest/api/network/virtualnetworkgateways#VirtualNetworkGateways_List
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderVirtualNetworkGateways + "?api-version=2016-12-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderVirtualNetworkGateways + "?api-version=2016-12-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Virtual Network Gateways for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "NetworkSecurityGroups":
                     // https://docs.microsoft.com/en-us/rest/api/network/networksecuritygroups#NetworkSecurityGroups_ListAll
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderNetworkSecurityGroups + "?api-version=2017-03-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderNetworkSecurityGroups + "?api-version=2017-03-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Network Security Groups for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "NetworkInterfaces":
                     // https://docs.microsoft.com/en-us/rest/api/network/networkinterfaces#NetworkInterfaces_ListAll
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderNetworkInterfaces + "?api-version=2017-03-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderNetworkInterfaces + "?api-version=2017-03-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Network Interfaces for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "StorageAccounts":
                     // https://docs.microsoft.com/en-us/rest/api/storagerp/storageaccounts#StorageAccounts_List
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderStorageAccounts + "?api-version=2016-01-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderStorageAccounts + "?api-version=2016-01-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Storage Accounts for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "StorageAccountKeys":
                     // https://docs.microsoft.com/en-us/rest/api/storagerp/storageaccounts#StorageAccounts_ListKeys
                     methodType = "POST";
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderStorageAccounts + info["StorageAccountName"] + "/listKeys?api-version=2016-01-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderStorageAccounts + info["StorageAccountName"] + "/listKeys?api-version=2016-01-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Storage Account Key for Subscription ID : " + _AzureSubscription.SubscriptionId + " / Storage Account: " + info["StorageAccountName"] + " ...");
                     break;
                 case "VirtualMachines":
                     // https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-list-subscription
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderVirtualMachines + "?api-version=2016-03-30";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderVirtualMachines + "?api-version=2016-03-30";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Virtual Machines for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "ManagedDisks":
                     // https://docs.microsoft.com/en-us/rest/api/manageddisks/disks/disks-list-by-subscription
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderManagedDisks + "?api-version=2016-04-30-preview";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderManagedDisks + "?api-version=2016-04-30-preview";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Managed Disks for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "LoadBalancers":
                     // https://docs.microsoft.com/en-us/rest/api/network/loadbalancer/list-load-balancers-within-a-subscription
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderLoadBalancers + "?api-version=2016-09-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderLoadBalancers + "?api-version=2016-09-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Load Balancers for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 case "PublicIPs":
                     // https://docs.microsoft.com/en-us/rest/api/network/virtualnetwork/list-public-ip-addresses-within-a-resource-group
-                    url = AzureServiceUrls.GetARMServiceManagementUrl(this._AzureContext.AzureEnvironment) + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderPublicIpAddress + "?api-version=2016-09-01";
+                    url = _AzureContext.AzureServiceUrls.GetARMServiceManagementUrl() + "subscriptions/" + _AzureSubscription.SubscriptionId + "/resourceGroups/" + resourceGroup.Name + ArmConst.ProviderPublicIpAddress + "?api-version=2016-09-01";
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting ARM Public IPs for Resource Group '" + resourceGroup.Name + "'.");
                     break;
                 default:
@@ -1401,8 +1434,11 @@ namespace MigAz.Azure
 
                         HttpWebResponse exceptionResponse = (HttpWebResponse)webException.Response;
 
-                        if ((int)exceptionResponse.StatusCode == 429 || // 429 Too Many Requests
-                            ((int)exceptionResponse.StatusCode >= 500 && (int)exceptionResponse.StatusCode <= 599)
+                        if ((exceptionResponse != null) &&
+                            (
+                                (int)exceptionResponse.StatusCode == 429 || // 429 Too Many Requests
+                                ((int)exceptionResponse.StatusCode >= 500 && (int)exceptionResponse.StatusCode <= 599)
+                            )
                             )
                         {
                             DateTime sleepUntil = DateTime.Now.AddSeconds(retrySeconds);
@@ -1462,6 +1498,8 @@ namespace MigAz.Azure
 
                 if (this._AzureSubscription != null)
                 {
+                    await this.GetAzureARMLocations();
+
                     foreach (Azure.Asm.NetworkSecurityGroup asmNetworkSecurityGroup in await this.GetAzureAsmNetworkSecurityGroups())
                     {
                         // Ensure we load the Full Details to get NSG Rules
@@ -1786,6 +1824,8 @@ namespace MigAz.Azure
 
                 if (this._AzureSubscription != null)
                 {
+                    await this.GetAzureARMLocations();
+
                     List<Task> armNetworkSecurityGroupTasks = new List<Task>();
                     foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
                     {

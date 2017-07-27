@@ -38,6 +38,11 @@ namespace MigAz.Azure.UserControls
             set { this.treeTargetARM.ImageList = value; }
         }
 
+        public Azure.MigrationTarget.ResourceGroup TargetResourceGroup
+        {
+            get { return _TargetResourceGroup; }
+        }
+
         public PropertyPanel PropertyPanel
         {
             get { return _PropertyPanel; }

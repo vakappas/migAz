@@ -57,17 +57,5 @@ namespace MigAz.Azure.Generator.AsmToArm
             }
         }
 
-        //public JObject GetTemplate()
-        //{
-        //    if (!TemplateStreams.ContainsKey("export.json"))
-        //        return null;
-
-        //    MemoryStream templateStream = TemplateStreams["export.json"];
-        //    templateStream.Position = 0;
-        //    StreamReader sr = new StreamReader(templateStream);
-        //    String myStr = sr.ReadToEnd();
-
-        //    return JObject.Parse(myStr);
-        //}
     }
 }

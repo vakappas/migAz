@@ -40,7 +40,7 @@ namespace MigAz.Azure.UserControls
 
             if (_TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations.Count > 0)
             {
-                await networkSelectionControl1.Bind(azureContext, targetTreeView.GetVirtualNetworksInMigration());
+                await networkSelectionControl1.Bind(azureContext, targetTreeView, targetTreeView.GetVirtualNetworksInMigration());
                 networkSelectionControl1.VirtualNetworkTarget = _TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations[0];
             }
 

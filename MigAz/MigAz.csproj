@@ -65,14 +65,14 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.13.9.1126, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.3.13.9\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.14.2.11, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.3.14.2\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.Platform, Version=3.13.9.1126, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.3.13.9\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.Platform, Version=3.14.2.11, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.3.14.2\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -92,6 +92,12 @@
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>app.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ASM403ForbiddenExceptionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ASM403ForbiddenExceptionDialog.Designer.cs">
+      <DependentUpon>ASM403ForbiddenExceptionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\MigAzForm.cs">
       <SubType>Form</SubType>
@@ -136,6 +142,9 @@
     <Compile Include="Migrators\AwsToArm.Designer.cs">
       <DependentUpon>AwsToArm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Forms\ASM403ForbiddenExceptionDialog.resx">
+      <DependentUpon>ASM403ForbiddenExceptionDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\MigAzForm.resx">
       <DependentUpon>MigAzForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -8,13 +8,13 @@ namespace MigAz.Azure.Arm
     public class StorageAccount : ArmResource, IStorageAccount, IStorageTarget
     {
         private List<StorageAccountKey> ResourceTokenKeys = new List<StorageAccountKey>();
-        private AzureEnvironment _AzureEnvironment;
+        private AzureContext _AzureContext;
 
         private StorageAccount() : base(null) { }
 
-        public StorageAccount(JToken resourceToken, AzureEnvironment azureEnvironment) : base(resourceToken)
+        public StorageAccount(JToken resourceToken, AzureContext azureContext) : base(resourceToken)
         {
-            _AzureEnvironment = azureEnvironment;
+            _AzureContext = azureContext;
         }
 
         public List<StorageAccountKey> Keys
@@ -106,7 +106,7 @@ namespace MigAz.Azure.Arm
         {
             get
             {
-                return AzureServiceUrls.GetBlobEndpointUrl(_AzureEnvironment);
+                return _AzureContext.AzureServiceUrls.GetBlobEndpointUrl();
             }
         }
 

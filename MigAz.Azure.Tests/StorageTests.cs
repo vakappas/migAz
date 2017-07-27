@@ -41,6 +41,7 @@ namespace MigAz.Tests
 
             JObject templateJson = JObject.Parse(await templateGenerator.GetTemplateString());
 
+
             Assert.AreEqual(1, templateJson["resources"].Children().Count());
 
             //var resource = templateJson["resources"].Single();

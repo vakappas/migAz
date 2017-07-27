@@ -32,7 +32,7 @@
             </li>
             <li>
                 <p>Open Azure PowerShell and sign into your target subscription.</p>
-                <pre>Login-AzureRmAccount{migAzAzureEnvironmentSwitch}{subscriptionSwitch}{tenantSwitch}
+                <pre>Login-AzureRmAccount{migAzAzureEnvironmentSwitch}{tenantSwitch}{subscriptionSwitch}
 Select-AzureRmSubscription{subscriptionSwitch}</pre>
             </li>
             <li>
@@ -42,7 +42,7 @@ Select-AzureRmSubscription{subscriptionSwitch}</pre>
             <li>
                 <p>Deploy your template to the new Resource Group. Note you will see errors relating to missing VHD files if your 
                     template contains VMs. This is expected.</p>
-<pre>New-AzureRmResourceGroupDeployment -TemplateFile "{templatePath}" -ResourceGroupName "{resourceGroupName}"</pre>
+<pre>New-AzureRmResourceGroupDeployment -ResourceGroupName "{resourceGroupName}" -TemplateFile "{templatePath}"</pre>
             </li>
             <li>
                 <p>If your template contains VMs, run the script to snapshot and copy the VHDs from your source to your target 
@@ -56,7 +56,7 @@ Select-AzureRmSubscription{subscriptionSwitch}</pre>
             </li>
             <li>
                 <p>Once the copy has completed, redeploy the template to your resource group to fix up the VHD file locations.</p>
-<pre>New-AzureRmResourceGroupDeployment -TemplateFile "{templatePath}" -ResourceGroupName "{resourceGroupName}"</pre>
+<pre>New-AzureRmResourceGroupDeployment -ResourceGroupName "{resourceGroupName}" -TemplateFile "{templatePath}"</pre>
             </li>
         </ol>
         <p>Once you are happy that all is well with your ARM Resource Deployment, you can delete your old Classic ASM Resources.

@@ -74,12 +74,13 @@
             // rbExistingARMVNet
             // 
             this.rbExistingARMVNet.AutoSize = true;
+            this.rbExistingARMVNet.Enabled = false;
             this.rbExistingARMVNet.Location = new System.Drawing.Point(87, 25);
             this.rbExistingARMVNet.Margin = new System.Windows.Forms.Padding(2);
             this.rbExistingARMVNet.Name = "rbExistingARMVNet";
-            this.rbExistingARMVNet.Size = new System.Drawing.Size(160, 17);
+            this.rbExistingARMVNet.Size = new System.Drawing.Size(143, 17);
             this.rbExistingARMVNet.TabIndex = 31;
-            this.rbExistingARMVNet.Text = "Existing ARM VNet in Target";
+            this.rbExistingARMVNet.Text = "Existing VNet in Location";
             this.rbExistingARMVNet.UseVisualStyleBackColor = true;
             this.rbExistingARMVNet.CheckedChanged += new System.EventHandler(this.rbExistingARMVNet_CheckedChanged);
             // 

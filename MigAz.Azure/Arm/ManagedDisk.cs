@@ -28,9 +28,9 @@ namespace MigAz.Azure.Arm
             get { return (string)ResourceToken["type"]; }
         }
 
-        public string DiskSizeGB
+        public Int32 DiskSizeGb
         {
-            get { return (string)ResourceToken["properties"]["diskSizeGB"]; }
+            get { return Convert.ToInt32((string)ResourceToken["properties"]["diskSizeGB"]); }
         }
 
         public string OwnerId

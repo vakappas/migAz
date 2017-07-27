@@ -8,6 +8,7 @@ namespace MigAz.Core.Interface
 {
     public interface IDisk
     {
+        Int32 DiskSizeGb { get; }
         //String MediaLink { get; }
         //String StorageAccountBlob { get; }
         //String StorageAccountContainer { get; }

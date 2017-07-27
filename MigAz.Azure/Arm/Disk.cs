@@ -91,6 +91,100 @@ namespace MigAz.Azure.Arm
             }
         }
 
+        public bool IsEncrypted
+        {
+            get
+            {
+                if (this.ResourceToken["encryptionSettings"] == null)
+                    return false;
+
+                if (this.ResourceToken["encryptionSettings"]["enabled"] == null)
+                    return false;
+
+                return Convert.ToBoolean((string)this.ResourceToken["encryptionSettings"]["enabled"]);
+            }
+        }
+
+        public string DiskEncryptionKeySourceVaultId
+        {
+            get
+            {
+                if (this.ResourceToken["encryptionSettings"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["diskEncryptionKey"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["diskEncryptionKey"]["sourceVault"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["diskEncryptionKey"]["sourceVault"]["id"] == null)
+                    return null;
+
+                return (string)this.ResourceToken["encryptionSettings"]["diskEncryptionKey"]["sourceVault"]["id"];
+            }
+        }
+        public string DiskEncryptionKeySecretUrl
+        {
+            get
+            {
+                if (this.ResourceToken["encryptionSettings"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["diskEncryptionKey"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["diskEncryptionKey"]["secretUrl"] == null)
+                    return null;
+
+                return (string)this.ResourceToken["encryptionSettings"]["diskEncryptionKey"]["secretUrl"];
+            }
+        }
+
+        public bool IsEncryptedWithKeyEncryptionKey
+        {
+            get
+            {
+                return this.KeyEncryptionKeyKeyUrl != null;
+            }
+        }
+
+        public string KeyEncryptionKeySourceVaultId
+        {
+            get
+            {
+                if (this.ResourceToken["encryptionSettings"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["keyEncryptionKey"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["keyEncryptionKey"]["sourceVault"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["keyEncryptionKey"]["sourceVault"]["id"] == null)
+                    return null;
+
+                return (string)this.ResourceToken["encryptionSettings"]["keyEncryptionKey"]["sourceVault"]["id"];
+            }
+        }
+        public string KeyEncryptionKeyKeyUrl
+        {
+            get
+            {
+                if (this.ResourceToken["encryptionSettings"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["keyEncryptionKey"] == null)
+                    return null;
+
+                if (this.ResourceToken["encryptionSettings"]["keyEncryptionKey"]["keyUrl"] == null)
+                    return null;
+
+                return (string)this.ResourceToken["encryptionSettings"]["keyEncryptionKey"]["keyUrl"];
+            }
+        }
+
         public override string ToString()
         {
             return this.Name;

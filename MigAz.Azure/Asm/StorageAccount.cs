@@ -74,7 +74,7 @@ namespace MigAz.Azure.Asm
         {
             get
             {
-                return AzureServiceUrls.GetBlobEndpointUrl(_AzureContext.AzureEnvironment);
+                return _AzureContext.AzureServiceUrls.GetBlobEndpointUrl();
             }
         }
 

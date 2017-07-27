@@ -446,7 +446,7 @@ namespace MigAz.Core.ArmTemplate
         public ManagedDisk managedDisk;
         public string caching;
         public string createOption;
-        public long diskSizeGB; // TOOD, Paulo has this changing to a string
+        public long diskSizeGB;
         public long lun;
     }
 

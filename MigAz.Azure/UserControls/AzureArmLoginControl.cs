@@ -110,68 +110,61 @@ namespace MigAz.Azure.UserControls
         {
             _AzureContext.LogProvider.WriteLog("btnAuthenticate_Click", "Start");
 
-            try
+            if (btnAuthenticate.Text == "Sign In")
             {
-                if (btnAuthenticate.Text == "Sign In")
+                cboTenant.Enabled = false;
+                cboTenant.Items.Clear();
+                cmbSubscriptions.Enabled = false;
+                cmbSubscriptions.Items.Clear();
+
+                await _AzureContext.Login();
+
+                if (_AzureContext.TokenProvider != null)
                 {
-                    cboTenant.Enabled = false;
+                    lblAuthenticatedUser.Text = _AzureContext.TokenProvider.AuthenticationResult.UserInfo.DisplayableId;
+                    btnAuthenticate.Text = "Sign Out";
+
                     cboTenant.Items.Clear();
-                    cmbSubscriptions.Enabled = false;
-                    cmbSubscriptions.Items.Clear();
-
-                    await _AzureContext.Login();
-
-                    if (_AzureContext.TokenProvider != null)
+                    foreach (AzureTenant azureTenant in await _AzureContext.AzureRetriever.GetAzureARMTenants())
                     {
-                        lblAuthenticatedUser.Text = _AzureContext.TokenProvider.AuthenticationResult.UserInfo.DisplayableId;
-                        btnAuthenticate.Text = "Sign Out";
-
-                        cboTenant.Items.Clear();
-                        foreach (AzureTenant azureTenant in await _AzureContext.AzureRetriever.GetAzureARMTenants())
-                        {
-                            if (azureTenant.Subscriptions.Count > 0) // Only add Tenants to the drop down that have subscriptions
-                                cboTenant.Items.Add(azureTenant);
-                        }
-
-                        cboAzureEnvironment.Enabled = false;
-                        cboTenant.Enabled = true;
-
-                        Application.DoEvents();
-
-                        if (cboTenant.Items.Count == 0)
-                        {
-                            MessageBox.Show("This account does not have any Tenants with Azure Subscription(s).  Logging out of Azure AD Account.");
-                            btnAuthenticate_Click(this, null); // No tenants, logout
-                        }
-                        if (cboTenant.Items.Count == 1)
-                        {
-                            cboTenant.SelectedIndex = 0;
-                        }
-                        else if (cboTenant.Items.Count > 1)
-                        {
-                            _AzureContext.StatusProvider.UpdateStatus("WAIT: Awaiting user selection of Azure Tenant");
-                        }
+                        if (azureTenant.Subscriptions.Count > 0) // Only add Tenants to the drop down that have subscriptions
+                            cboTenant.Items.Add(azureTenant);
                     }
-                    else
+
+                    cboAzureEnvironment.Enabled = false;
+                    cboTenant.Enabled = true;
+
+                    Application.DoEvents();
+
+                    if (cboTenant.Items.Count == 0)
                     {
-                        _AzureContext.LogProvider.WriteLog("GetToken_Click", "Failed to get token");
+                        MessageBox.Show("This account does not have any Tenants with Azure Subscription(s).  Logging out of Azure AD Account.");
+                        btnAuthenticate_Click(this, null); // No tenants, logout
+                    }
+                    if (cboTenant.Items.Count == 1)
+                    {
+                        cboTenant.SelectedIndex = 0;
+                    }
+                    else if (cboTenant.Items.Count > 1)
+                    {
+                        _AzureContext.StatusProvider.UpdateStatus("WAIT: Awaiting user selection of Azure Tenant");
                     }
                 }
                 else
                 {
-                    await _AzureContext.Logout();
-                    lblAuthenticatedUser.Text = "<Not Authenticated>";
-                    btnAuthenticate.Text = "Sign In";
-                    cboTenant.Items.Clear();
-                    cboTenant.Enabled = false;
-                    cmbSubscriptions.Items.Clear();
-                    cmbSubscriptions.Enabled = false;
-                    cboAzureEnvironment.Enabled = true;
+                    _AzureContext.LogProvider.WriteLog("GetToken_Click", "Failed to get token");
                 }
             }
-            catch (Exception exc)
+            else
             {
-                _AzureContext.LogProvider.WriteLog("btnAuthenticate_Click", "Exception: " + exc.Message);
+                await _AzureContext.Logout();
+                lblAuthenticatedUser.Text = "<Not Authenticated>";
+                btnAuthenticate.Text = "Sign In";
+                cboTenant.Items.Clear();
+                cboTenant.Enabled = false;
+                cmbSubscriptions.Items.Clear();
+                cmbSubscriptions.Enabled = false;
+                cboAzureEnvironment.Enabled = true;
             }
 
             _AzureContext.LogProvider.WriteLog("btnAuthenticate_Click", "End");

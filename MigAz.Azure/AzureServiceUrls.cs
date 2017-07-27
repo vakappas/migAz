@@ -7,9 +7,21 @@ using System.Threading.Tasks;
 
 namespace MigAz.Azure
 {
-    static class AzureServiceUrls
+    public class AzureServiceUrls
     {
-        private static Dictionary<string, string[]> _serviceUrls = new Dictionary<string, string[]>
+        private AzureContext _AzureContext;
+
+        private AzureServiceUrls() { }
+
+        public AzureServiceUrls(AzureContext azureContext)
+        {
+            if (azureContext == null)
+                throw new ArgumentException("Invalid Azure Context.");
+
+            _AzureContext = azureContext;
+        }
+
+        private Dictionary<string, string[]> _serviceUrls = new Dictionary<string, string[]>
         {
             {  "AzureCloud", new[] { "https://management.core.windows.net/", "https://management.azure.com/", "https://login.microsoftonline.com/", "blob.core.windows.net", "https://graph.windows.net/" } },
             // China Endpoints - https://msdn.microsoft.com/en-us/library/azure/dn578439.aspx
@@ -20,29 +32,44 @@ namespace MigAz.Azure
             {  "AzureUSGovernment", new[] { "https://management.core.usgovcloudapi.net/", "https://management.usgovcloudapi.net/", "https://login-us.microsoftonline.com/", "blob.core.usgovcloudapi.net", "https://graph.windows.net/" } },
         };
 
-        public static string GetASMServiceManagementUrl(AzureEnvironment azureEnvironment)
+        public string GetASMServiceManagementUrl()
         {
-            return _serviceUrls[azureEnvironment.ToString()][0];
+            if (_AzureContext != null && _AzureContext.LogProvider != null)
+                _AzureContext.LogProvider.WriteLog("AzureServiceUrls", "GetASMServiceManagementUrl " + _AzureContext.AzureEnvironment.ToString() + " " + _serviceUrls[_AzureContext.AzureEnvironment.ToString()][0]);
+
+            return _serviceUrls[_AzureContext.AzureEnvironment.ToString()][0];
         }
 
-        public static string GetARMServiceManagementUrl(AzureEnvironment azureEnvironment)
+        public string GetARMServiceManagementUrl()
         {
-            return _serviceUrls[azureEnvironment.ToString()][1];
+            if (_AzureContext != null && _AzureContext.LogProvider != null)
+                _AzureContext.LogProvider.WriteLog("AzureServiceUrls", "GetARMServiceManagementUrl " + _AzureContext.AzureEnvironment.ToString() + " " + _serviceUrls[_AzureContext.AzureEnvironment.ToString()][1]);
+
+            return _serviceUrls[_AzureContext.AzureEnvironment.ToString()][1];
         }
 
-        public static string GetAzureLoginUrl(AzureEnvironment azureEnvironment)
+        public string GetAzureLoginUrl()
         {
-            return _serviceUrls[azureEnvironment.ToString()][2];
+            if (_AzureContext != null && _AzureContext.LogProvider != null)
+                _AzureContext.LogProvider.WriteLog("AzureServiceUrls", "GetAzureLoginUrl " + _AzureContext.AzureEnvironment.ToString() + " " + _serviceUrls[_AzureContext.AzureEnvironment.ToString()][2]);
+
+            return _serviceUrls[_AzureContext.AzureEnvironment.ToString()][2];
         }
 
-        public static string GetBlobEndpointUrl(AzureEnvironment azureEnvironment)
+        public string GetBlobEndpointUrl()
         {
-            return _serviceUrls[azureEnvironment.ToString()][3];
+            if (_AzureContext != null && _AzureContext.LogProvider != null)
+                _AzureContext.LogProvider.WriteLog("AzureServiceUrls", "GetBlobEndpointUrl " + _AzureContext.AzureEnvironment.ToString() + " " + _serviceUrls[_AzureContext.AzureEnvironment.ToString()][3]);
+
+            return _serviceUrls[_AzureContext.AzureEnvironment.ToString()][3];
         }
 
-        public static string GetGraphApiUrl(AzureEnvironment azureEnvironment)
+        public string GetGraphApiUrl()
         {
-            return _serviceUrls[azureEnvironment.ToString()][4];
+            if (_AzureContext != null && _AzureContext.LogProvider != null)
+                _AzureContext.LogProvider.WriteLog("AzureServiceUrls", "GetGraphApiUrl " + _AzureContext.AzureEnvironment.ToString() + " " + _serviceUrls[_AzureContext.AzureEnvironment.ToString()][4]);
+
+            return _serviceUrls[_AzureContext.AzureEnvironment.ToString()][4];
         }
     }
 }

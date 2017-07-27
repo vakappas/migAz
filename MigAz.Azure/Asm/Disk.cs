@@ -56,14 +56,14 @@ namespace MigAz.Azure.Asm
             get { return _DataDiskNode.SelectSingleNode("HostCaching").InnerText; }
         }
 
-        public Int64? DiskSizeInGB
+        public Int32 DiskSizeGb
         {
             get
             {
                 if (_DataDiskNode.SelectSingleNode("LogicalDiskSizeInGB") == null)
-                    return null;
+                    return 0;
 
-                return Int64.Parse(_DataDiskNode.SelectSingleNode("LogicalDiskSizeInGB").InnerText);
+                return Int32.Parse(_DataDiskNode.SelectSingleNode("LogicalDiskSizeInGB").InnerText);
             }
         }
 

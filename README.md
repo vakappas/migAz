@@ -34,6 +34,12 @@ In case of any issues during the deployment of the export.JSON you need to troub
 
 
 ## Release Notes
+### v2.2.12.0
+ - Storage Account property selection now only allows selection from existing Storage Account(s) in "same" target location (same Azure Data Center as the Target Resource Group is targeted for)
+ - Generates storageaccounts.json
+ - Output Stream tab reordering (based on order generated)
+ - Added support to recognize if Azure ARM VM Disk(s) are Encrypted, present migration error message indicating that MigAz does not contain support to migrated encrypted disks.
+
 ### v2.2.3.0
 - Only exports copyblobdetails.json if there are disks that are being copied.
 - Reintroduced ASM to ARM conversion of Load Balancers and Public IP objects, utilizing "target" objects for export.
