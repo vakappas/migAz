@@ -7,5 +7,6 @@
         string BlobStorageNamespace { get; }
 
         string AccountType { get; }
+        string PrimaryLocation { get; }
     }
 }

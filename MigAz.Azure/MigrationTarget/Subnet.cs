@@ -36,8 +36,6 @@ namespace MigAz.Azure.MigrationTarget
                 {
                     this.RouteTable = new RouteTable(azureContext, asmSubnet.RouteTable);
                 }
-
-                this.AddressPrefix = asmSubnet.AddressPrefix;
             }
             else if (source.GetType() == typeof(Arm.Subnet))
             {
@@ -53,16 +51,18 @@ namespace MigAz.Azure.MigrationTarget
                     this.RouteTable = new RouteTable(azureContext, armSubnet.RouteTable);
                 }
 
-                this.AddressPrefix = armSubnet.AddressPrefix;
             }
 
+            this.AddressPrefix = source.AddressPrefix;
             this.TargetName = source.Name;
         }
 
-        public Subnet(ISubnet sourceSubnet)
+        public Subnet(MigrationTarget.VirtualNetwork parentVirtualNetwork, ISubnet sourceSubnet)
         {
+            this._ParentVirtualNetwork = parentVirtualNetwork;
             this._SourceSubnet = sourceSubnet;
             this.TargetName = sourceSubnet.Name;
+            this.AddressPrefix = sourceSubnet.AddressPrefix;
         }
 
         private NetworkSecurityGroup SeekNetworkSecurityGroup(List<NetworkSecurityGroup> networkSecurityGroups, string sourceName)

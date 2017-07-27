@@ -10,14 +10,21 @@ namespace MigAz.Azure.Arm
     {
         private JObject _ResourceGroupJson;
         private AzureEnvironment _AzureEnvironment;
+        private AzureSubscription _AzureSubscription;
 
-        internal ResourceGroup(JObject resourceGroupJson, AzureEnvironment azureEnvironment)
+        internal ResourceGroup(JObject resourceGroupJson, AzureEnvironment azureEnvironment, AzureSubscription azureSubscription)
         {
             _ResourceGroupJson = resourceGroupJson;
             _AzureEnvironment = azureEnvironment;
+            _AzureSubscription = azureSubscription;
         }
 
         private ResourceGroup() { }
+
+        public AzureSubscription AzureSubscription
+        {
+            get { return _AzureSubscription; }
+        }
 
         public string Name => (string)_ResourceGroupJson["name"];
         public string Location => (string)_ResourceGroupJson["location"];

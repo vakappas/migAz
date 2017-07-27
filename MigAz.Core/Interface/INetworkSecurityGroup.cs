@@ -3,5 +3,6 @@
     public interface INetworkSecurityGroup
     {
         string Name { get; }
+        string Location { get; }
     }
 }

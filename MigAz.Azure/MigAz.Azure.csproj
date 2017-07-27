@@ -84,6 +84,7 @@
     <Compile Include="Asm\NetworkInterfaceIpConfiguration.cs" />
     <Compile Include="AzureRestRequest.cs" />
     <Compile Include="AzureRestResponse.cs" />
+    <Compile Include="AzureSubscriptionResourceCache.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="ExportArtifacts.cs" />
     <Compile Include="Forms\AzureLoginContextDialog.cs">
@@ -98,6 +99,7 @@
     <Compile Include="Forms\AzureSubscriptionContextDialog.Designer.cs">
       <DependentUpon>AzureSubscriptionContextDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Generator\TemplateGenerator.cs" />
     <Compile Include="Interface\IArmDisk.cs" />
     <Compile Include="Interface\IVirtualNetworkTarget.cs" />
     <Compile Include="MigrationTarget\AvailabilitySet.cs" />
@@ -180,6 +182,9 @@
     </Compile>
     <Compile Include="UserControls\DiskProperties.Designer.cs">
       <DependentUpon>DiskProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\IMigratorUserControl.cs">
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="UserControls\LoadBalancerProperties.cs">
       <SubType>UserControl</SubType>

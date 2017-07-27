@@ -1,4 +1,6 @@
-﻿using MigAz.Core.Generator;
+﻿using MigAz.Azure.Generator;
+using MigAz.Core.Generator;
+using MigAz.Core.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MigAz.Core.Interface
+namespace MigAz.Azure.UserControls
 {
     public class IMigratorUserControl : UserControl
     {

@@ -1,5 +1,6 @@
 ﻿using MigAz.Azure.Interface;
 using MigAz.Core.Interface;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace MigAz.Azure.MigrationTarget
         private String _TargetSize = String.Empty;
         private List<NetworkInterface> _NetworkInterfaces = new List<NetworkInterface>();
         private List<Disk> _DataDisks = new List<Disk>();
+        private Dictionary<string, string> _PlanAttributes;
 
         private VirtualMachine() { }
 
@@ -76,6 +78,16 @@ namespace MigAz.Azure.MigrationTarget
                 Azure.MigrationTarget.NetworkInterface migrationNetworkInterface = new Azure.MigrationTarget.NetworkInterface(_AzureContext, armNetworkInterface, targetVirtualNetworks, networkSecurityGroups);
                 this.NetworkInterfaces.Add(migrationNetworkInterface);
             }
+
+            if (virtualMachine.HasPlan)
+            {
+                _PlanAttributes = new Dictionary<string, string>();
+
+                foreach (JProperty planAttribute in virtualMachine.ResourceToken["plan"])
+                {
+                    _PlanAttributes.Add(planAttribute.Name, planAttribute.Value.ToString());
+                }
+            }
         }
 
         private StorageAccount SeekTargetStorageAccount(List<StorageAccount> storageAccounts, string sourceAccountName)
@@ -99,8 +111,7 @@ namespace MigAz.Azure.MigrationTarget
             get { return _DataDisks; }
         }
 
-        public IVirtualMachine Source
-        { get; set; }
+        public IVirtualMachine Source { get; set; }
 
         public List<NetworkInterface> NetworkInterfaces
         {
@@ -132,6 +143,12 @@ namespace MigAz.Azure.MigrationTarget
         {
             get { return _TargetName; }
             set { _TargetName = value.Trim().Replace(" ", String.Empty); }
+        }
+
+        public Dictionary<string, string> PlanAttributes
+        {
+            get { return _PlanAttributes; }
+            set { _PlanAttributes = value; }
         }
 
         public string SourceName

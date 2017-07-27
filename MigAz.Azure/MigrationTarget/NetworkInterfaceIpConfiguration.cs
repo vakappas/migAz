@@ -132,6 +132,9 @@ namespace MigAz.Azure.MigrationTarget
             set { _TargetName = value.Trim().Replace(" ", String.Empty); }
         }
 
+        public PublicIp TargetPublicIp { get; set; }
+        public NetworkSecurityGroup TargetNetworkSecurityGroup { get; set; }
+
         public override string ToString()
         {
             return this.TargetName;

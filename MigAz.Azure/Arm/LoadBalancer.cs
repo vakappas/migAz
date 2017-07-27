@@ -91,6 +91,7 @@ namespace MigAz.Azure.Arm
 
         internal override async Task InitializeChildrenAsync(AzureContext azureContext)
         {
+            await base.InitializeChildrenAsync(azureContext);
 
             foreach (FrontEndIpConfiguration frontEndIpConfiguration in this.FrontEndIpConfigurations)
             {

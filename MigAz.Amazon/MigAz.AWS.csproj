@@ -57,7 +57,8 @@
     <Compile Include="EbsVolume.cs" />
     <Compile Include="Ec2Instance.cs" />
     <Compile Include="Generator\AWSRetriever.cs" />
-    <Compile Include="Generator\AwsToArmGenerator.cs" />
+    <Compile Include="Generator\AwsGenerator.cs" />
+    <Compile Include="MigrationSource\LoadBalancer.cs" />
     <Compile Include="MigrationSource\Subnet.cs" />
     <Compile Include="MigrationSource\VirtualNetwork.cs" />
     <Compile Include="Models\AwsToArmTelemetryRecord.cs" />

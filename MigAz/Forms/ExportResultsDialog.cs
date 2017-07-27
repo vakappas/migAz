@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using MigAz.Azure.Generator.AsmToArm;
 using MigAz.Core.Generator;
+using MigAz.Azure.Generator;
 
 namespace MigAz.Forms
 {

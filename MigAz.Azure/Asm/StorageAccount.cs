@@ -35,12 +35,12 @@ namespace MigAz.Azure.Asm
             get { return _XmlNode.SelectSingleNode("//StorageServiceProperties/AccountType").InnerText; }
         }
 
-        public string GeoPrimaryRegion
+        public string PrimaryLocation
         {
             get { return _XmlNode["StorageServiceProperties"]["GeoPrimaryRegion"].InnerText; }
         }
 
-        public string Location
+        public string GeoPrimaryRegion
         {
             get {  return _XmlNode.SelectSingleNode("//ExtendedProperties/ExtendedProperty[Name='ResourceLocation']/Value").InnerText; }
         }

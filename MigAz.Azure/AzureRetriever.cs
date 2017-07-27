@@ -38,21 +38,10 @@ namespace MigAz.Azure
         private List<Arm.Location> _ArmLocations;
         private List<AzureTenant> _ArmTenants;
         private List<AzureSubscription> _ArmSubscriptions;
-        private List<ResourceGroup> _ArmResourceGroups;
         private List<MigrationTarget.AvailabilitySet> _MigrationAvailabilitySets;
 
-        private Dictionary<Arm.ResourceGroup, List<Arm.AvailabilitySet>> _ArmAvailabilitySets = new Dictionary<ResourceGroup, List<Arm.AvailabilitySet>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.VirtualMachine>> _ArmVirtualMachines = new Dictionary<ResourceGroup, List<Arm.VirtualMachine>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.VirtualNetwork>> _ArmVirtualNetworks = new Dictionary<ResourceGroup, List<Arm.VirtualNetwork>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.NetworkSecurityGroup>> _ArmNetworkSecurityGroups = new Dictionary<ResourceGroup, List<Arm.NetworkSecurityGroup>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.StorageAccount>> _ArmStorageAccounts = new Dictionary<ResourceGroup, List<Arm.StorageAccount>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.ManagedDisk>> _ArmManagedDisks = new Dictionary<ResourceGroup, List<Arm.ManagedDisk>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.LoadBalancer>> _ArmLoadBalancers = new Dictionary<ResourceGroup, List<Arm.LoadBalancer>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.NetworkInterface>> _ArmNetworkInterfaces = new Dictionary<ResourceGroup, List<Arm.NetworkInterface>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.VirtualNetworkGateway>> _ArmVirtualNetworkGateways = new Dictionary<ResourceGroup, List<Arm.VirtualNetworkGateway>>();
-        private Dictionary<Arm.ResourceGroup, List<Arm.PublicIP>> _ArmPublicIPs = new Dictionary<ResourceGroup, List<PublicIP>>();
-
         private Dictionary<string, AzureRestResponse> _RestApiCache = new Dictionary<string, AzureRestResponse>();
+        private Dictionary<AzureSubscription, AzureSubscriptionResourceCache> _AzureSubscriptionResourceCaches = new Dictionary<AzureSubscription, AzureSubscriptionResourceCache>();
 
         private AzureRetriever() { }
 
@@ -61,30 +50,28 @@ namespace MigAz.Azure
             _AzureContext = azureContext;
         }
 
+        public AzureSubscription SubscriptionContext
+        {
+            get { return _AzureSubscription; }
+        }
+
         public void ClearCache()
         {
             _RestApiCache = new Dictionary<string, AzureRestResponse>();
             _ArmLocations = null;
             _ArmTenants = null;
             _ArmSubscriptions = null;
-            _ArmResourceGroups = null;
             _MigrationAvailabilitySets = null;
             _VirtualNetworks = null;
             _StorageAccounts = null;
             _CloudServices = null;
-
-            _ArmVirtualMachines = new Dictionary<ResourceGroup, List<Arm.VirtualMachine>>();
-            _ArmAvailabilitySets = new Dictionary<ResourceGroup, List<Arm.AvailabilitySet>>();
-            _ArmVirtualMachines = new Dictionary<ResourceGroup, List<Arm.VirtualMachine>>();
-            _ArmVirtualNetworks = new Dictionary<ResourceGroup, List<Arm.VirtualNetwork>>();
-            _ArmNetworkSecurityGroups = new Dictionary<ResourceGroup, List<Arm.NetworkSecurityGroup>>();
-            _ArmStorageAccounts = new Dictionary<ResourceGroup, List<Arm.StorageAccount>>();
-            _ArmManagedDisks = new Dictionary<ResourceGroup, List<Arm.ManagedDisk>>();
-            _ArmLoadBalancers = new Dictionary<ResourceGroup, List<Arm.LoadBalancer>>();
-            _ArmNetworkInterfaces = new Dictionary<ResourceGroup, List<Arm.NetworkInterface>>();
-            _ArmVirtualNetworkGateways = new Dictionary<ResourceGroup, List<Arm.VirtualNetworkGateway>>();
-            _ArmPublicIPs = new Dictionary<ResourceGroup, List<PublicIP>>();
     }
+
+        public void LoadRestCache(string filepath)
+        {
+            StreamReader reader = new StreamReader(filepath);
+            _RestApiCache = JsonConvert.DeserializeObject<Dictionary<string, AzureRestResponse>>(reader.ReadToEnd());
+        }
 
         public void SaveRestCache()
         {
@@ -187,7 +174,7 @@ namespace MigAz.Azure
             return vmlbmapping;
         }
 
-        internal async Task SetSubscriptionContext(AzureSubscription azureSubscription)
+        public async Task SetSubscriptionContext(AzureSubscription azureSubscription)
         {
             _AzureSubscription = azureSubscription;
             await this._AzureContext.TokenProvider.GetToken(azureSubscription);
@@ -271,6 +258,9 @@ namespace MigAz.Azure
         public async virtual Task<Asm.StorageAccount> GetAzureAsmStorageAccount(string storageAccountName)
         {
             _AzureContext.LogProvider.WriteLog("GetAzureAsmStorageAccount", "Start");
+
+            if (storageAccountName == null)
+                return null;
 
             foreach (Asm.StorageAccount asmStorageAccount in await this.GetAzureAsmStorageAccounts())
             {
@@ -647,38 +637,36 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMResourceGroups", "Start");
 
-            if (_ArmResourceGroups != null)
-                return _ArmResourceGroups;
+            if (this._AzureSubscription.ArmResourceGroups.Count > 0)
+                return this._AzureSubscription.ArmResourceGroups;
 
             JObject resourceGroupsJson = await this.GetAzureARMResources("ResourceGroups", null, null);
 
             var resourceGroups = from resourceGroup in resourceGroupsJson["value"]
                                  select resourceGroup;
 
-            _ArmResourceGroups = new List<ResourceGroup>();
-
             foreach (JObject resourceGroupJson in resourceGroups)
             {
-                ResourceGroup resourceGroup = new ResourceGroup(resourceGroupJson, _AzureContext.AzureEnvironment);
-                _ArmResourceGroups.Add(resourceGroup);
+                ResourceGroup resourceGroup = new ResourceGroup(resourceGroupJson, _AzureContext.AzureEnvironment, _AzureContext.AzureSubscription);
+                this._AzureSubscription.ArmResourceGroups.Add(resourceGroup);
                 _AzureContext.LogProvider.WriteLog("GetAzureARMResourceGroups", "Loaded ARM Resource Group '" + resourceGroup.Name + "'.");
 
             }
 
-            return _ArmResourceGroups;
+            return this._AzureSubscription.ArmResourceGroups;
         }
 
-        public virtual Arm.VirtualNetwork GetAzureARMVirtualNetwork(string virtualNetworkId)
+        public virtual Arm.VirtualNetwork GetAzureARMVirtualNetwork(AzureSubscription azureSubscription, string virtualNetworkId)
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMVirtualNetwork", "Start");
 
-            if (_ArmVirtualNetworks == null)
+            if (azureSubscription == null || azureSubscription.ArmVirtualNetworks == null)
                 return null;
 
             if (virtualNetworkId.ToLower().Contains("/subnets/"))
                 virtualNetworkId = virtualNetworkId.Substring(0, virtualNetworkId.ToLower().IndexOf("/subnets/"));
 
-            foreach (List<Arm.VirtualNetwork> listVirtualNetworks in _ArmVirtualNetworks.Values)
+            foreach (List<Arm.VirtualNetwork> listVirtualNetworks in azureSubscription.ArmVirtualNetworks.Values)
             {
                 foreach (Arm.VirtualNetwork armVirtualNetwork in listVirtualNetworks)
                 {
@@ -709,8 +697,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMVirtualNetworks", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmVirtualNetworks.ContainsKey(resourceGroup))
-                return _ArmVirtualNetworks[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmVirtualNetworks.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmVirtualNetworks[resourceGroup];
 
             JObject virtualNetworksJson = await this.GetAzureARMResources("VirtualNetworks", resourceGroup, null);
 
@@ -735,7 +723,7 @@ namespace MigAz.Azure
 
             }
 
-            _ArmVirtualNetworks.Add(resourceGroup, resourceGroupVirtualNetworks);
+            resourceGroup.AzureSubscription.ArmVirtualNetworks.Add(resourceGroup, resourceGroupVirtualNetworks);
             return resourceGroupVirtualNetworks;
         }
 
@@ -743,8 +731,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMManagedDisks", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmManagedDisks.ContainsKey(resourceGroup))
-                return _ArmManagedDisks[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmManagedDisks.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmManagedDisks[resourceGroup];
 
             JObject managedDisksJson = await this.GetAzureARMResources("ManagedDisks", resourceGroup, null);
 
@@ -759,7 +747,7 @@ namespace MigAz.Azure
                 resourceGroupManagedDisks.Add(armManagedDisk);
             }
 
-            _ArmManagedDisks.Add(resourceGroup, resourceGroupManagedDisks);
+            resourceGroup.AzureSubscription.ArmManagedDisks.Add(resourceGroup, resourceGroupManagedDisks);
             return resourceGroupManagedDisks;
         }
 
@@ -782,8 +770,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMStorageAccounts", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmStorageAccounts.ContainsKey(resourceGroup))
-                return _ArmStorageAccounts[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmStorageAccounts.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmStorageAccounts[resourceGroup];
 
             JObject storageAccountsJson = await this.GetAzureARMResources("StorageAccounts", resourceGroup, null);
 
@@ -805,18 +793,18 @@ namespace MigAz.Azure
                 resouceGroupStorageAccounts.Add(armStorageAccount);
             }
 
-            _ArmStorageAccounts.Add(resourceGroup, resouceGroupStorageAccounts);
+            resourceGroup.AzureSubscription.ArmStorageAccounts.Add(resourceGroup, resouceGroupStorageAccounts);
             return resouceGroupStorageAccounts;
         }
 
-        public virtual Arm.StorageAccount GetAzureARMStorageAccount(string name)
+        public virtual Arm.StorageAccount GetAzureARMStorageAccount(AzureSubscription azureSubscription, string name)
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMStorageAccount", "Start");
 
-            if (_ArmStorageAccounts == null)
+            if (azureSubscription == null || azureSubscription.ArmStorageAccounts == null)
                 return null;
 
-            foreach (List<Arm.StorageAccount> listStorageAccounts in _ArmStorageAccounts.Values)
+            foreach (List<Arm.StorageAccount> listStorageAccounts in azureSubscription.ArmStorageAccounts.Values)
             {
                 foreach (Arm.StorageAccount armStorageAccount in listStorageAccounts)
                 {
@@ -857,8 +845,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureArmVirtualMachines", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmVirtualMachines.ContainsKey(resourceGroup))
-                return _ArmVirtualMachines[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmVirtualMachines.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmVirtualMachines[resourceGroup];
 
             JObject virtualMachineJson = await this.GetAzureARMResources("VirtualMachines", resourceGroup, null);
 
@@ -876,7 +864,7 @@ namespace MigAz.Azure
                 _AzureContext.StatusProvider.UpdateStatus("Loaded ARM Virtual Machine '" + armVirtualMachine.Name + "'.");
             }
 
-            _ArmVirtualMachines.Add(resourceGroup, resourceGroupVirtualMachines);
+            resourceGroup.AzureSubscription.ArmVirtualMachines.Add(resourceGroup, resourceGroupVirtualMachines);
             return resourceGroupVirtualMachines;
         }
 
@@ -907,8 +895,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMAvailabilitySets", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmAvailabilitySets.ContainsKey(resourceGroup))
-                return _ArmAvailabilitySets[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmAvailabilitySets.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmAvailabilitySets[resourceGroup];
 
             JObject availabilitySetJson = await this.GetAzureARMResources("AvailabilitySets", resourceGroup, null);
 
@@ -920,21 +908,22 @@ namespace MigAz.Azure
             foreach (var availabilitySet in availabilitySets)
             {
                 Arm.AvailabilitySet armAvailabilitySet = new Arm.AvailabilitySet(availabilitySet);
+                await armAvailabilitySet.InitializeChildrenAsync(this._AzureContext);
                 resourceGroupAvailabilitySets.Add(armAvailabilitySet);
             }
 
-            _ArmAvailabilitySets.Add(resourceGroup, resourceGroupAvailabilitySets);
+            resourceGroup.AzureSubscription.ArmAvailabilitySets.Add(resourceGroup, resourceGroupAvailabilitySets);
             return resourceGroupAvailabilitySets;
         }
 
-        public Arm.AvailabilitySet GetAzureARMAvailabilitySet(string availabilitySetId)
+        public Arm.AvailabilitySet GetAzureARMAvailabilitySet(AzureSubscription azureSubscription, string availabilitySetId)
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMAvailabilitySet", "Start");
 
-            if (_ArmAvailabilitySets == null)
+            if (azureSubscription == null || azureSubscription.ArmAvailabilitySets == null)
                 return null;
 
-            foreach (List<Arm.AvailabilitySet> listAvailabilitySet in _ArmAvailabilitySets.Values)
+            foreach (List<Arm.AvailabilitySet> listAvailabilitySet in azureSubscription.ArmAvailabilitySets.Values)
             {
                 foreach (Arm.AvailabilitySet armAvailabilitySet in listAvailabilitySet)
                 {
@@ -973,8 +962,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMNetworkInterfaces", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmNetworkInterfaces.ContainsKey(resourceGroup))
-                return _ArmNetworkInterfaces[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmNetworkInterfaces.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmNetworkInterfaces[resourceGroup];
 
             JObject networkInterfacesJson = await this.GetAzureARMResources("NetworkInterfaces", resourceGroup, null);
 
@@ -991,7 +980,7 @@ namespace MigAz.Azure
                 _AzureContext.LogProvider.WriteLog("GetAzureARMNetworkInterfaces", "Loaded ARM Network Interface '" + armNetworkInterface.Name + "'.");
             }
 
-            _ArmNetworkInterfaces.Add(resourceGroup, resourceGroupNetworkInterfaces);
+            resourceGroup.AzureSubscription.ArmNetworkInterfaces.Add(resourceGroup, resourceGroupNetworkInterfaces);
             return resourceGroupNetworkInterfaces;
         }
 
@@ -1017,8 +1006,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMVirtualNetworkGateways", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmVirtualNetworkGateways.ContainsKey(resourceGroup))
-                return _ArmVirtualNetworkGateways[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmVirtualNetworkGateways.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmVirtualNetworkGateways[resourceGroup];
 
             JObject virtualNetworkGatewaysJson = await this.GetAzureARMResources("VirtualNetworkGateways", resourceGroup, null);
 
@@ -1033,7 +1022,7 @@ namespace MigAz.Azure
                 resourceGroupVirtualNetworkGateways.Add(armVirtualNetworkGateway);
             }
 
-            _ArmVirtualNetworkGateways.Add(resourceGroup, resourceGroupVirtualNetworkGateways);
+            resourceGroup.AzureSubscription.ArmVirtualNetworkGateways.Add(resourceGroup, resourceGroupVirtualNetworkGateways);
             return resourceGroupVirtualNetworkGateways;
         }
 
@@ -1055,8 +1044,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMNetworkSecurityGroups", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmNetworkSecurityGroups.ContainsKey(resourceGroup))
-                return _ArmNetworkSecurityGroups[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmNetworkSecurityGroups.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmNetworkSecurityGroups[resourceGroup];
 
             JObject networkSecurityGroupsJson = await this.GetAzureARMResources("NetworkSecurityGroups", resourceGroup, null);
 
@@ -1074,7 +1063,7 @@ namespace MigAz.Azure
                 _AzureContext.StatusProvider.UpdateStatus("Loaded ARM Network Security Group '" + armNetworkSecurityGroup.Name + "'.");
             }
 
-            _ArmNetworkSecurityGroups.Add(resourceGroup, resourceGroupNetworkSecurityGroups);
+            resourceGroup.AzureSubscription.ArmNetworkSecurityGroups.Add(resourceGroup, resourceGroupNetworkSecurityGroups);
             return resourceGroupNetworkSecurityGroups;
         }
 
@@ -1097,8 +1086,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMPublicIPs", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmPublicIPs.ContainsKey(resourceGroup))
-                return _ArmPublicIPs[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmPublicIPs.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmPublicIPs[resourceGroup];
 
             JObject publicIPJson = await this.GetAzureARMResources("PublicIPs", resourceGroup, null);
 
@@ -1114,7 +1103,7 @@ namespace MigAz.Azure
                 resourceGroupPublicIPs.Add(armPublicIP);
             }
 
-            _ArmPublicIPs.Add(resourceGroup, resourceGroupPublicIPs);
+            resourceGroup.AzureSubscription.ArmPublicIPs.Add(resourceGroup, resourceGroupPublicIPs);
             return resourceGroupPublicIPs;
         }
 
@@ -1122,8 +1111,8 @@ namespace MigAz.Azure
         {
             _AzureContext.LogProvider.WriteLog("GetAzureARMLoadBalancers", "Start - '" + resourceGroup.ToString() + "' Resource Group");
 
-            if (_ArmLoadBalancers.ContainsKey(resourceGroup))
-                return _ArmLoadBalancers[resourceGroup];
+            if (resourceGroup.AzureSubscription.ArmLoadBalancers.ContainsKey(resourceGroup))
+                return resourceGroup.AzureSubscription.ArmLoadBalancers[resourceGroup];
 
             JObject loadBalancersJson = await this.GetAzureARMResources("LoadBalancers", resourceGroup, null);
 
@@ -1139,7 +1128,7 @@ namespace MigAz.Azure
                 resourceGroupLoadBalancers.Add(armLoadBalancer);
             }
 
-            _ArmLoadBalancers.Add(resourceGroup, resourceGroupLoadBalancers);
+            resourceGroup.AzureSubscription.ArmLoadBalancers.Add(resourceGroup, resourceGroupLoadBalancers);
             return resourceGroupLoadBalancers;
         }
 
@@ -1234,7 +1223,7 @@ namespace MigAz.Azure
                     throw new ArgumentException("Unknown ResourceType: " + resourceType);
             }
             
-            AzureRestRequest azureRestRequest = new AzureRestRequest(url, _AzureContext.TokenProvider.AuthenticationResult.AccessToken);
+            AzureRestRequest azureRestRequest = new AzureRestRequest(url, _AzureContext.TokenProvider.AccessToken);
             azureRestRequest.Headers.Add("x-ms-version", "2015-04-01");
             AzureRestResponse azureRestResponse = await GetAzureRestResponse(azureRestRequest);
 
@@ -1249,12 +1238,14 @@ namespace MigAz.Azure
             string url = null;
             bool useCached = true;
 
-            _AzureContext.LogProvider.WriteLog("GetAzureARMResources", "Start REST Request");
+            if (_AzureContext == null)
+                throw new ArgumentNullException("AzureContext is null.  Unable to call Azure API without Azure Context.");
+            if (_AzureContext.TokenProvider == null)
+                throw new ArgumentNullException("TokenProvider Context is null.  Unable to call Azure API without TokenProvider.");
+            if (_AzureContext.TokenProvider.AccessToken == null)
+                throw new ArgumentNullException("AccessToken Context is null.  Unable to call Azure API without AccessToken.");
 
-            if (_AzureContext.TokenProvider == null || _AzureContext.TokenProvider.AuthenticationResult == null)
-                throw new ArgumentNullException("TokenProvider Context or AuthenticationResult Context is null.  Unable to call Azure API without AuthenticationResult.");
-
-            AuthenticationResult authenticationResult = _AzureContext.TokenProvider.AuthenticationResult;
+            String accessToken = _AzureContext.TokenProvider.AccessToken;
 
             switch (resourceType)
             {
@@ -1264,8 +1255,12 @@ namespace MigAz.Azure
                     break;
                 case "Domains": // todo, move to a graph class?
                     url = AzureServiceUrls.GetGraphApiUrl(this._AzureContext.AzureEnvironment) + "myorganization/domains?api-version=1.6";
-                    authenticationResult = await _AzureContext.TokenProvider.GetGraphToken(this._AzureContext.AzureEnvironment, info["tenantId"].ToString());
                     useCached = false;
+
+                    AuthenticationResult tenantAuthenticationResult = await _AzureContext.TokenProvider.GetGraphToken(this._AzureContext.AzureEnvironment, info["tenantId"].ToString());
+                    if (tenantAuthenticationResult != null)
+                        accessToken = tenantAuthenticationResult.AccessToken;
+
                     _AzureContext.StatusProvider.UpdateStatus("BUSY: Getting Tenant Domain details from Graph...");
                     break;
                 case "Subscriptions":
@@ -1273,7 +1268,10 @@ namespace MigAz.Azure
 
                     if (info != null && info["tenantId"] != null)
                     {
-                        authenticationResult = await _AzureContext.TokenProvider.GetAzureToken(this._AzureContext.AzureEnvironment, info["tenantId"].ToString());
+                        AuthenticationResult subscriptionAuthenticationResult = await _AzureContext.TokenProvider.GetAzureToken(this._AzureContext.AzureEnvironment, info["tenantId"].ToString());
+                        if (subscriptionAuthenticationResult != null)
+                            accessToken = subscriptionAuthenticationResult.AccessToken;
+
                         useCached = false;
                     }
 
@@ -1350,7 +1348,7 @@ namespace MigAz.Azure
                     throw new ArgumentException("Unknown ResourceType: " + resourceType);
             }
 
-            AzureRestRequest azureRestRequest = new AzureRestRequest(url, authenticationResult.AccessToken, methodType, useCached);
+            AzureRestRequest azureRestRequest = new AzureRestRequest(url, accessToken, methodType, useCached);
             AzureRestResponse azureRestResponse = await GetAzureRestResponse(azureRestRequest);
             return JObject.Parse(azureRestResponse.Response);
         }
@@ -1434,7 +1432,7 @@ namespace MigAz.Azure
             }
             catch (Exception exception)
             {
-                _AzureContext.LogProvider.WriteLog("GetAzureRestResponse", azureRestRequest.RequestGuid.ToString() + "  EXCEPTION " + exception.Message);
+                _AzureContext.LogProvider.WriteLog("GetAzureRestResponse", azureRestRequest.RequestGuid.ToString() + azureRestRequest.Url + "  EXCEPTION " + exception.Message);
                 throw exception;
             }
 
@@ -1449,5 +1447,417 @@ namespace MigAz.Azure
 
             return azureRestResponse;
         }
+
+
+
+
+
+
+
+        public async Task BindAsmResources()
+        {
+            if (!_IsAsmLoaded)
+            {
+                _IsAsmLoaded = true;
+
+                if (this._AzureSubscription != null)
+                {
+                    foreach (Azure.Asm.NetworkSecurityGroup asmNetworkSecurityGroup in await this.GetAzureAsmNetworkSecurityGroups())
+                    {
+                        // Ensure we load the Full Details to get NSG Rules
+                        Azure.Asm.NetworkSecurityGroup asmNetworkSecurityGroupFullDetail = await this.GetAzureAsmNetworkSecurityGroup(asmNetworkSecurityGroup.Name);
+
+                        Azure.MigrationTarget.NetworkSecurityGroup targetNetworkSecurityGroup = new Azure.MigrationTarget.NetworkSecurityGroup(this._AzureContext, asmNetworkSecurityGroupFullDetail);
+                        _AsmTargetNetworkSecurityGroups.Add(targetNetworkSecurityGroup);
+                    }
+
+                    List<Azure.Asm.VirtualNetwork> asmVirtualNetworks = await this.GetAzureAsmVirtualNetworks();
+                    foreach (Azure.Asm.VirtualNetwork asmVirtualNetwork in asmVirtualNetworks)
+                    {
+                        Azure.MigrationTarget.VirtualNetwork targetVirtualNetwork = new Azure.MigrationTarget.VirtualNetwork(this._AzureContext, asmVirtualNetwork, _AsmTargetNetworkSecurityGroups);
+                        _AsmTargetVirtualNetworks.Add(targetVirtualNetwork);
+                    }
+
+                    foreach (Azure.Asm.StorageAccount asmStorageAccount in await this.GetAzureAsmStorageAccounts())
+                    {
+                        Azure.MigrationTarget.StorageAccount targetStorageAccount = new Azure.MigrationTarget.StorageAccount(_AzureContext, asmStorageAccount);
+                        _AsmTargetStorageAccounts.Add(targetStorageAccount);
+                    }
+
+                    List<Azure.Asm.CloudService> asmCloudServices = await this.GetAzureAsmCloudServices();
+                    foreach (Azure.Asm.CloudService asmCloudService in asmCloudServices)
+                    {
+                        List<Azure.MigrationTarget.VirtualMachine> cloudServiceTargetVirtualMachines = new List<Azure.MigrationTarget.VirtualMachine>();
+                        Azure.MigrationTarget.AvailabilitySet targetAvailabilitySet = new Azure.MigrationTarget.AvailabilitySet(this._AzureContext, asmCloudService);
+
+                        foreach (Azure.Asm.VirtualMachine asmVirtualMachine in asmCloudService.VirtualMachines)
+                        {
+                            Azure.MigrationTarget.VirtualMachine targetVirtualMachine = new Azure.MigrationTarget.VirtualMachine(this._AzureContext, asmVirtualMachine, _AsmTargetVirtualNetworks, _AsmTargetStorageAccounts, _AsmTargetNetworkSecurityGroups);
+                            targetVirtualMachine.TargetAvailabilitySet = targetAvailabilitySet;
+                            cloudServiceTargetVirtualMachines.Add(targetVirtualMachine);
+                            _AsmTargetVirtualMachines.Add(targetVirtualMachine);
+                        }
+
+                        Azure.MigrationTarget.LoadBalancer targetLoadBalancer = new Azure.MigrationTarget.LoadBalancer();
+                        targetLoadBalancer.Name = asmCloudService.Name;
+                        targetLoadBalancer.SourceName = asmCloudService.Name + "-LB";
+
+                        Azure.MigrationTarget.FrontEndIpConfiguration frontEndIpConfiguration = new Azure.MigrationTarget.FrontEndIpConfiguration(targetLoadBalancer);
+
+                        Azure.MigrationTarget.BackEndAddressPool backEndAddressPool = new Azure.MigrationTarget.BackEndAddressPool(targetLoadBalancer);
+
+                        // if internal load balancer
+                        if (asmCloudService.ResourceXml.SelectNodes("//Deployments/Deployment/LoadBalancers/LoadBalancer/FrontendIpConfiguration/Type").Count > 0)
+                        {
+                            string virtualnetworkname = asmCloudService.ResourceXml.SelectSingleNode("//Deployments/Deployment/VirtualNetworkName").InnerText;
+                            string subnetname = asmCloudService.ResourceXml.SelectSingleNode("//Deployments/Deployment/LoadBalancers/LoadBalancer/FrontendIpConfiguration/SubnetName").InnerText.Replace(" ", "");
+
+                            if (asmCloudService.ResourceXml.SelectNodes("//Deployments/Deployment/LoadBalancers/LoadBalancer/FrontendIpConfiguration/StaticVirtualNetworkIPAddress").Count > 0)
+                            {
+                                frontEndIpConfiguration.TargetPrivateIPAllocationMethod = "Static";
+                                frontEndIpConfiguration.TargetPrivateIpAddress = asmCloudService.ResourceXml.SelectSingleNode("//Deployments/Deployment/LoadBalancers/LoadBalancer/FrontendIpConfiguration/StaticVirtualNetworkIPAddress").InnerText;
+                            }
+
+                            if (cloudServiceTargetVirtualMachines.Count > 0)
+                            {
+                                if (cloudServiceTargetVirtualMachines[0].PrimaryNetworkInterface != null)
+                                {
+                                    if (cloudServiceTargetVirtualMachines[0].PrimaryNetworkInterface.TargetNetworkInterfaceIpConfigurations.Count > 0)
+                                    {
+                                        frontEndIpConfiguration.TargetVirtualNetwork = cloudServiceTargetVirtualMachines[0].PrimaryNetworkInterface.TargetNetworkInterfaceIpConfigurations[0].TargetVirtualNetwork;
+                                        frontEndIpConfiguration.TargetSubnet = cloudServiceTargetVirtualMachines[0].PrimaryNetworkInterface.TargetNetworkInterfaceIpConfigurations[0].TargetSubnet;
+                                    }
+                                }
+                            }
+                        }
+                        else // if external load balancer
+                        {
+                            Azure.MigrationTarget.PublicIp loadBalancerPublicIp = new Azure.MigrationTarget.PublicIp();
+                            loadBalancerPublicIp.SourceName = asmCloudService.Name + "-PIP";
+                            loadBalancerPublicIp.Name = asmCloudService.Name;
+                            loadBalancerPublicIp.DomainNameLabel = asmCloudService.Name;
+
+                            frontEndIpConfiguration.PublicIp = loadBalancerPublicIp;
+
+                            targetLoadBalancer.LoadBalancerType = MigrationTarget.LoadBalancerType.Public;
+                        }
+
+                        foreach (Azure.MigrationTarget.VirtualMachine targetVirtualMachine in cloudServiceTargetVirtualMachines)
+                        {
+                            if (targetVirtualMachine.PrimaryNetworkInterface != null)
+                                targetVirtualMachine.PrimaryNetworkInterface.BackEndAddressPool = backEndAddressPool;
+
+                            Azure.Asm.VirtualMachine asmVirtualMachine = (Azure.Asm.VirtualMachine)targetVirtualMachine.Source;
+                            foreach (XmlNode inputendpoint in asmVirtualMachine.ResourceXml.SelectNodes("//ConfigurationSets/ConfigurationSet/InputEndpoints/InputEndpoint"))
+                            {
+                                if (inputendpoint.SelectSingleNode("LoadBalancedEndpointSetName") == null) // if it's a inbound nat rule
+                                {
+                                    Azure.MigrationTarget.InboundNatRule targetInboundNatRule = new Azure.MigrationTarget.InboundNatRule(targetLoadBalancer);
+                                    targetInboundNatRule.Name = asmVirtualMachine.RoleName + "-" + inputendpoint.SelectSingleNode("Name").InnerText;
+                                    targetInboundNatRule.FrontEndPort = Int32.Parse(inputendpoint.SelectSingleNode("Port").InnerText);
+                                    targetInboundNatRule.BackEndPort = Int32.Parse(inputendpoint.SelectSingleNode("LocalPort").InnerText);
+                                    targetInboundNatRule.Protocol = inputendpoint.SelectSingleNode("Protocol").InnerText;
+                                    targetInboundNatRule.FrontEndIpConfiguration = frontEndIpConfiguration;
+
+                                    if (targetVirtualMachine.PrimaryNetworkInterface != null)
+                                        targetVirtualMachine.PrimaryNetworkInterface.InboundNatRules.Add(targetInboundNatRule);
+                                }
+                                else // if it's a load balancing rule
+                                {
+                                    XmlNode probenode = inputendpoint.SelectSingleNode("LoadBalancerProbe");
+
+                                    Azure.MigrationTarget.Probe targetProbe = null;
+                                    foreach (Azure.MigrationTarget.Probe existingProbe in targetLoadBalancer.Probes)
+                                    {
+                                        if (existingProbe.Name == inputendpoint.SelectSingleNode("LoadBalancedEndpointSetName").InnerText)
+                                        {
+                                            targetProbe = existingProbe;
+                                            break;
+                                        }
+                                    }
+
+                                    if (targetProbe == null)
+                                    {
+                                        targetProbe = new Azure.MigrationTarget.Probe();
+                                        targetProbe.Name = inputendpoint.SelectSingleNode("LoadBalancedEndpointSetName").InnerText;
+                                        targetProbe.Port = Int32.Parse(probenode.SelectSingleNode("Port").InnerText);
+                                        targetProbe.Protocol = probenode.SelectSingleNode("Protocol").InnerText;
+                                        targetLoadBalancer.Probes.Add(targetProbe);
+                                    }
+
+                                    Azure.MigrationTarget.LoadBalancingRule targetLoadBalancingRule = null;
+                                    foreach (Azure.MigrationTarget.LoadBalancingRule existingLoadBalancingRule in targetLoadBalancer.LoadBalancingRules)
+                                    {
+                                        if (existingLoadBalancingRule.Name == inputendpoint.SelectSingleNode("LoadBalancedEndpointSetName").InnerText)
+                                        {
+                                            targetLoadBalancingRule = existingLoadBalancingRule;
+                                            break;
+                                        }
+                                    }
+
+                                    if (targetLoadBalancingRule == null)
+                                    {
+                                        targetLoadBalancingRule = new Azure.MigrationTarget.LoadBalancingRule(targetLoadBalancer);
+                                        targetLoadBalancingRule.Name = inputendpoint.SelectSingleNode("LoadBalancedEndpointSetName").InnerText;
+                                        targetLoadBalancingRule.FrontEndIpConfiguration = frontEndIpConfiguration;
+                                        targetLoadBalancingRule.BackEndAddressPool = targetLoadBalancer.BackEndAddressPools[0];
+                                        targetLoadBalancingRule.Probe = targetProbe;
+                                        targetLoadBalancingRule.FrontEndPort = Int32.Parse(inputendpoint.SelectSingleNode("Port").InnerText);
+                                        targetLoadBalancingRule.BackEndPort = Int32.Parse(inputendpoint.SelectSingleNode("LocalPort").InnerText);
+                                        targetLoadBalancingRule.Protocol = inputendpoint.SelectSingleNode("Protocol").InnerText;
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        private List<Azure.MigrationTarget.NetworkSecurityGroup> _AsmTargetNetworkSecurityGroups = new List<MigrationTarget.NetworkSecurityGroup>();
+        private List<Azure.MigrationTarget.StorageAccount> _AsmTargetStorageAccounts = new List<MigrationTarget.StorageAccount>();
+        private List<Azure.MigrationTarget.VirtualNetwork> _AsmTargetVirtualNetworks = new List<MigrationTarget.VirtualNetwork>();
+        private List<Azure.MigrationTarget.VirtualMachine> _AsmTargetVirtualMachines = new List<MigrationTarget.VirtualMachine>();
+        private List<Azure.MigrationTarget.StorageAccount> _ArmTargetStorageAccounts = new List<MigrationTarget.StorageAccount>();
+        private List<Azure.MigrationTarget.VirtualNetwork> _ArmTargetVirtualNetworks = new List<MigrationTarget.VirtualNetwork>();
+        private List<Azure.MigrationTarget.VirtualMachine> _ArmTargetVirtualMachines = new List<MigrationTarget.VirtualMachine>();
+        private List<Azure.MigrationTarget.AvailabilitySet> _ArmTargetAvailabilitySets = new List<MigrationTarget.AvailabilitySet>();
+        private List<Azure.MigrationTarget.Disk> _ArmTargetManagedDisks = new List<MigrationTarget.Disk>();
+        private List<Azure.MigrationTarget.LoadBalancer> _ArmTargetLoadBalancers = new List<MigrationTarget.LoadBalancer>();
+        private List<Azure.MigrationTarget.NetworkSecurityGroup> _ArmTargetNetworkSecurityGroups = new List<MigrationTarget.NetworkSecurityGroup>();
+        private List<Azure.MigrationTarget.PublicIp> _ArmTargetPublicIPs = new List<MigrationTarget.PublicIp>();
+        private bool _IsAsmLoaded = false;
+        private bool _IsArmLoaded = false;
+
+        public List<Azure.MigrationTarget.NetworkSecurityGroup> AsmTargetNetworkSecurityGroups { get { return _AsmTargetNetworkSecurityGroups; } }
+        public List<Azure.MigrationTarget.StorageAccount> AsmTargetStorageAccounts { get { return _AsmTargetStorageAccounts; } }
+        public List<Azure.MigrationTarget.VirtualNetwork> AsmTargetVirtualNetworks { get { return _AsmTargetVirtualNetworks; } }
+        public List<Azure.MigrationTarget.VirtualMachine> AsmTargetVirtualMachines { get { return _AsmTargetVirtualMachines; } }
+        public List<Azure.MigrationTarget.StorageAccount> ArmTargetStorageAccounts { get { return _ArmTargetStorageAccounts; } }
+        public List<Azure.MigrationTarget.VirtualNetwork> ArmTargetVirtualNetworks { get { return _ArmTargetVirtualNetworks; } }
+        public List<Azure.MigrationTarget.VirtualMachine> ArmTargetVirtualMachines { get { return _ArmTargetVirtualMachines; } }
+        public List<Azure.MigrationTarget.AvailabilitySet> ArmTargetAvailabilitySets { get { return _ArmTargetAvailabilitySets; } }
+        public List<Azure.MigrationTarget.Disk> ArmTargetManagedDisks { get { return _ArmTargetManagedDisks; } }
+        public List<Azure.MigrationTarget.LoadBalancer> ArmTargetLoadBalancers { get { return _ArmTargetLoadBalancers; } }
+        public List<Azure.MigrationTarget.NetworkSecurityGroup> ArmTargetNetworkSecurityGroups { get { return _ArmTargetNetworkSecurityGroups; } }
+        public List<Azure.MigrationTarget.PublicIp> ArmTargetPublicIPs { get { return _ArmTargetPublicIPs; } }
+
+        private async Task LoadARMManagedDisks(ResourceGroup armResourceGroup)
+        {
+            foreach (Azure.Arm.ManagedDisk armManagedDisk in await this.GetAzureARMManagedDisks(armResourceGroup))
+            {
+                Azure.MigrationTarget.Disk targetManagedDisk = new Azure.MigrationTarget.Disk(armManagedDisk);
+                _ArmTargetManagedDisks.Add(targetManagedDisk);
+            }
+        }
+
+        private async Task LoadARMPublicIPs(ResourceGroup armResourceGroup)
+        {
+            foreach (Azure.Arm.PublicIP armPublicIp in await this.GetAzureARMPublicIPs(armResourceGroup))
+            {
+                Azure.MigrationTarget.PublicIp targetPublicIP = new Azure.MigrationTarget.PublicIp(armPublicIp);
+                _ArmTargetPublicIPs.Add(targetPublicIP);
+            }
+        }
+
+        private async Task LoadARMLoadBalancers(ResourceGroup armResourceGroup)
+        {
+            foreach (Azure.Arm.LoadBalancer armLoadBalancer in await this.GetAzureARMLoadBalancers(armResourceGroup))
+            {
+                Azure.MigrationTarget.LoadBalancer targetLoadBalancer = new Azure.MigrationTarget.LoadBalancer(armLoadBalancer);
+                foreach (Azure.MigrationTarget.FrontEndIpConfiguration targetFrontEndIpConfiguration in targetLoadBalancer.FrontEndIpConfigurations)
+                {
+                    if (targetFrontEndIpConfiguration.Source != null && targetFrontEndIpConfiguration.Source.PublicIP != null)
+                    {
+                        foreach (Azure.MigrationTarget.PublicIp targetPublicIp in _ArmTargetPublicIPs)
+                        {
+                            if (targetPublicIp.SourceName == targetFrontEndIpConfiguration.Source.PublicIP.Name)
+                            {
+                                targetFrontEndIpConfiguration.PublicIp = targetPublicIp;
+                            }
+                        }
+                    }
+                }
+                _ArmTargetLoadBalancers.Add(targetLoadBalancer);
+            }
+        }
+        private async Task LoadARMAvailabilitySets(ResourceGroup armResourceGroup)
+        {
+            foreach (Azure.Arm.AvailabilitySet armAvailabilitySet in await this.GetAzureARMAvailabilitySets(armResourceGroup))
+            {
+                Azure.MigrationTarget.AvailabilitySet targetAvailabilitySet = new Azure.MigrationTarget.AvailabilitySet(this._AzureContext, armAvailabilitySet);
+                _ArmTargetAvailabilitySets.Add(targetAvailabilitySet);
+            }
+        }
+
+        private async Task LoadARMVirtualMachines(ResourceGroup armResourceGroup)
+        {
+            foreach (Azure.Arm.VirtualMachine armVirtualMachine in await this.GetAzureArmVirtualMachines(armResourceGroup))
+            {
+                Azure.MigrationTarget.VirtualMachine targetVirtualMachine = new Azure.MigrationTarget.VirtualMachine(this._AzureContext, armVirtualMachine, _ArmTargetVirtualNetworks, _ArmTargetStorageAccounts, _ArmTargetNetworkSecurityGroups);
+                _ArmTargetVirtualMachines.Add(targetVirtualMachine);
+
+                if (armVirtualMachine.AvailabilitySet != null)
+                {
+                    foreach (Azure.MigrationTarget.AvailabilitySet targetAvailabilitySet in _ArmTargetAvailabilitySets)
+                    {
+                        if (targetAvailabilitySet.SourceAvailabilitySet != null)
+                        {
+                            Azure.Arm.AvailabilitySet sourceAvailabilitySet = (Azure.Arm.AvailabilitySet)targetAvailabilitySet.SourceAvailabilitySet;
+                            if (sourceAvailabilitySet.Id == armVirtualMachine.AvailabilitySet.Id)
+                            {
+                                targetVirtualMachine.TargetAvailabilitySet = targetAvailabilitySet;
+                            }
+                        }
+                    }
+                }
+
+                foreach (Azure.MigrationTarget.NetworkInterface networkInterface in targetVirtualMachine.NetworkInterfaces)
+                {
+                    if (networkInterface.SourceNetworkInterface != null)
+                    {
+                        Azure.Arm.NetworkInterface sourceNetworkInterface = (Azure.Arm.NetworkInterface)networkInterface.SourceNetworkInterface;
+                        if (sourceNetworkInterface.NetworkSecurityGroup != null)
+                        {
+                            foreach (Azure.MigrationTarget.NetworkSecurityGroup targetNetworkSecurityGroup in _ArmTargetNetworkSecurityGroups)
+                            {
+                                if (targetNetworkSecurityGroup.TargetName == sourceNetworkInterface.NetworkSecurityGroup.Name)
+                                    networkInterface.TargetNetworkSecurityGroup = targetNetworkSecurityGroup;
+                            }
+                        }
+                    }
+
+                    foreach (Azure.MigrationTarget.NetworkInterfaceIpConfiguration networkInterfaceIpConfiguration in networkInterface.TargetNetworkInterfaceIpConfigurations)
+                    {
+                        if (networkInterfaceIpConfiguration.SourceIpConfiguration != null)
+                        {
+                            Azure.Arm.NetworkInterfaceIpConfiguration sourceIpConfiguration = (Azure.Arm.NetworkInterfaceIpConfiguration)networkInterfaceIpConfiguration.SourceIpConfiguration;
+
+                            if (sourceIpConfiguration.PublicIP != null)
+                            {
+                                foreach (Azure.MigrationTarget.PublicIp targetPublicIp in _ArmTargetPublicIPs)
+                                {
+                                    if (targetPublicIp.Name == sourceIpConfiguration.PublicIP.Name)
+                                        networkInterfaceIpConfiguration.TargetPublicIp = targetPublicIp;
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+            }
+        }
+
+        private async Task LoadARMStorageAccounts(ResourceGroup armResourceGroup)
+        {
+            foreach (Azure.Arm.StorageAccount armStorageAccount in await this.GetAzureARMStorageAccounts(armResourceGroup))
+            {
+                Azure.MigrationTarget.StorageAccount targetStorageAccount = new Azure.MigrationTarget.StorageAccount(this._AzureContext, armStorageAccount);
+                _ArmTargetStorageAccounts.Add(targetStorageAccount);
+            }
+        }
+
+        private async Task LoadARMVirtualNetworks(ResourceGroup armResourceGroup)
+        {
+            foreach (Azure.Arm.VirtualNetwork armVirtualNetwork in await this.GetAzureARMVirtualNetworks(armResourceGroup))
+            {
+                Azure.MigrationTarget.VirtualNetwork targetVirtualNetwork = new Azure.MigrationTarget.VirtualNetwork(this._AzureContext, armVirtualNetwork, _ArmTargetNetworkSecurityGroups);
+                _ArmTargetVirtualNetworks.Add(targetVirtualNetwork);
+            }
+        }
+
+        private async Task LoadARMNetworkSecurityGroups(ResourceGroup armResourceGroup)
+        {
+            foreach (Azure.Arm.NetworkSecurityGroup armNetworkSecurityGroup in await this.GetAzureARMNetworkSecurityGroups(armResourceGroup))
+            {
+                Azure.MigrationTarget.NetworkSecurityGroup targetNetworkSecurityGroup = new Azure.MigrationTarget.NetworkSecurityGroup(this._AzureContext, armNetworkSecurityGroup);
+                _ArmTargetNetworkSecurityGroups.Add(targetNetworkSecurityGroup);
+            }
+        }
+
+        public async Task BindArmResources()
+        {
+
+            if (!_IsArmLoaded)
+            {
+                _IsArmLoaded = true;
+
+                if (this._AzureSubscription != null)
+                {
+                    List<Task> armNetworkSecurityGroupTasks = new List<Task>();
+                    foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
+                    {
+                        Task armNetworkSecurityGroupTask = LoadARMNetworkSecurityGroups(armResourceGroup);
+                        armNetworkSecurityGroupTasks.Add(armNetworkSecurityGroupTask);
+                    }
+                    await Task.WhenAll(armNetworkSecurityGroupTasks.ToArray());
+
+                    List<Task> armPublicIPTasks = new List<Task>();
+                    foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
+                    {
+                        Task armPublicIPTask = LoadARMPublicIPs(armResourceGroup);
+                        armPublicIPTasks.Add(armPublicIPTask);
+                    }
+                    await Task.WhenAll(armPublicIPTasks.ToArray());
+
+
+                    List<Task> armVirtualNetworkTasks = new List<Task>();
+                    foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
+                    {
+                        Task armVirtualNetworkTask = LoadARMVirtualNetworks(armResourceGroup);
+                        armVirtualNetworkTasks.Add(armVirtualNetworkTask);
+                    }
+                    await Task.WhenAll(armVirtualNetworkTasks.ToArray());
+
+                    List<Task> armStorageAccountTasks = new List<Task>();
+                    foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
+                    {
+                        Task armStorageAccountTask = LoadARMStorageAccounts(armResourceGroup);
+                        armStorageAccountTasks.Add(armStorageAccountTask);
+                    }
+                    await Task.WhenAll(armStorageAccountTasks.ToArray());
+
+                    try
+                    {
+                        List<Task> armManagedDiskTasks = new List<Task>();
+                        foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
+                        {
+                            Task armManagedDiskTask = LoadARMManagedDisks(armResourceGroup);
+                            armManagedDiskTasks.Add(armManagedDiskTask);
+                        }
+                        await Task.WhenAll(armManagedDiskTasks.ToArray());
+                    }
+                    catch (Exception exc) { }
+
+                    List<Task> armAvailabilitySetTasks = new List<Task>();
+                    foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
+                    {
+                        Task armAvailabilitySetTask = LoadARMAvailabilitySets(armResourceGroup);
+                        armAvailabilitySetTasks.Add(armAvailabilitySetTask);
+                    }
+                    await Task.WhenAll(armAvailabilitySetTasks.ToArray());
+
+                    List<Task> armVirtualMachineTasks = new List<Task>();
+                    foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
+                    {
+                        Task armVirtualMachineTask = LoadARMVirtualMachines(armResourceGroup);
+                        armVirtualMachineTasks.Add(armVirtualMachineTask);
+                    }
+                    await Task.WhenAll(armVirtualMachineTasks.ToArray());
+
+                    List<Task> armLoadBalancerTasks = new List<Task>();
+                    foreach (Azure.Arm.ResourceGroup armResourceGroup in await this.GetAzureARMResourceGroups())
+                    {
+                        Task armLoadBalancerTask = LoadARMLoadBalancers(armResourceGroup);
+                        armLoadBalancerTasks.Add(armLoadBalancerTask);
+                    }
+                    await Task.WhenAll(armLoadBalancerTasks.ToArray());
+                }
+
+            }
+        }
+
     }
 }

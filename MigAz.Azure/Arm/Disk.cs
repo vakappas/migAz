@@ -16,9 +16,11 @@ namespace MigAz.Azure.Arm
         {
         }
 
+        private Disk() : base(null) { }
+
         public async Task InitializeChildrenAsync(AzureContext azureContext)
         {
-            _SourceStorageAccount = azureContext.AzureRetriever.GetAzureARMStorageAccount(StorageAccountName);
+            _SourceStorageAccount = azureContext.AzureRetriever.GetAzureARMStorageAccount(azureContext.AzureSubscription, StorageAccountName);
         }
 
         public string CreateOption => (string)this.ResourceToken["createOption"];

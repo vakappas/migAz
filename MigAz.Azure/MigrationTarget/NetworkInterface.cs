@@ -79,10 +79,6 @@ namespace MigAz.Azure.MigrationTarget
             return this.TargetName + _AzureContext.SettingsProvider.NetworkInterfaceCardSuffix;
         }
 
-        public bool HasPublicIPs
-        {
-            get { return false; }
-        }
         public bool IsPrimary { get; set; }
 
         public NetworkSecurityGroup NetworkSecurityGroup
@@ -116,5 +112,7 @@ namespace MigAz.Azure.MigrationTarget
                     return this.SourceNetworkInterface.ToString();
             }
         }
+
+        public NetworkSecurityGroup TargetNetworkSecurityGroup { get; set; }
     }
 }

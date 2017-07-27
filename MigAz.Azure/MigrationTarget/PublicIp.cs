@@ -12,11 +12,13 @@ namespace MigAz.Azure.MigrationTarget
         private String _SourceName = String.Empty;
         private String _Name = String.Empty;
         private String _DomainNameLabel = String.Empty;
+        private Arm.PublicIP _Source;
 
         public PublicIp() { }
 
         public PublicIp(Arm.PublicIP armPublicIP)
         {
+            this._Source = armPublicIP;
             this.SourceName = armPublicIP.Name;
             this.Name = armPublicIP.Name;
             this.DomainNameLabel = armPublicIP.DomainNameLabel;
@@ -28,6 +30,10 @@ namespace MigAz.Azure.MigrationTarget
             set { _DomainNameLabel = value.ToLower(); }
         }
 
+        public Arm.PublicIP Source
+        {
+            get { return _Source; }
+        }
 
         public String SourceName
         {

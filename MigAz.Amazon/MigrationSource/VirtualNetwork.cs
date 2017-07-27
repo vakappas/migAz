@@ -12,16 +12,18 @@ namespace MigAz.AWS.MigrationSource
     {
         private Vpc _Source;
         List<ISubnet> _Subnets = new List<ISubnet>();
+        private List<DhcpOptions> _DhcpOptions;
 
         public string Id => _Source.VpcId;
 
         public ISubnet GatewaySubnet => throw new NotImplementedException();
 
-
         private VirtualNetwork() { }
         public VirtualNetwork(AwsObjectRetriever awsObjectRetriever, Vpc sourceVpc)
         {
             _Source = sourceVpc;
+            _DhcpOptions = awsObjectRetriever.getDhcpOptions(_Source.DhcpOptionsId);
+
             foreach (Amazon.EC2.Model.Subnet amazonSubnet in awsObjectRetriever.GetSubnets(this.Id))
             {
                 Subnet sourceSubnet = new Subnet(awsObjectRetriever, amazonSubnet);
@@ -29,13 +31,40 @@ namespace MigAz.AWS.MigrationSource
             }
         }
 
+        public String Location { get { return "TODO"; } }
+
         public List<String> AddressPrefixes
         {
             get
             {
-                List<String> addressPrefixes = new List<string>();
+                List<String> addressPrefixes = new List<String>();
                 addressPrefixes.Add(_Source.CidrBlock);
                 return addressPrefixes;
+            }
+        }
+
+        public List<String> DnsServers
+        {
+            get
+            {
+                List<String> dnsServers = new List<String>();
+                
+                if (_DhcpOptions != null)
+                {
+                    foreach (var dnsserver in _DhcpOptions)
+                    {
+                        foreach (var item in dnsserver.DhcpConfigurations)
+                        {
+                            if ((item.Key == "domain-name-servers") && (item.Values[0] != "AmazonProvidedDNS"))
+                            {
+                                foreach (var value in item.Values)
+                                    dnsServers.Add(value);
+                            }
+                        }
+                    }
+                }
+                
+                return dnsServers;
             }
         }
 

@@ -22,9 +22,13 @@ namespace MigAz.Azure
         {
             this._AzureRestRequest = azureRestRequest;
 
-            this.RequestGuid = _AzureRestRequest.RequestGuid;
-            this.Url = _AzureRestRequest.Url;
-            this.AccessToken = _AzureRestRequest.AccessToken;
+            if (this._AzureRestRequest != null)
+            {
+                this.RequestGuid = _AzureRestRequest.RequestGuid;
+                this.Url = _AzureRestRequest.Url;
+                this.AccessToken = _AzureRestRequest.AccessToken;
+            }
+
             this.Response = response;
         }
 

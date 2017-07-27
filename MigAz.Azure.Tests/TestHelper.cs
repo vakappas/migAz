@@ -12,6 +12,7 @@ using MigAz.Azure.Arm;
 using MigAz.Azure.Generator.AsmToArm;
 using MigAz.Core.Interface;
 using MigAz.Core.Generator;
+using MIGAZ.Tests.Fakes;
 
 namespace MigAz.Tests
 {
@@ -23,19 +24,25 @@ namespace MigAz.Tests
         {
             return new FakeAzureSubscription();
         }
-        public static AzureContext SetupAzureContext()
+        public static async Task<AzureContext> SetupAzureContext(string restResponseFile)
         {
-            return SetupAzureContext(AzureEnvironment.AzureCloud);
+            return await SetupAzureContext(AzureEnvironment.AzureCloud, restResponseFile);
         }
 
-        public static AzureContext SetupAzureContext(AzureEnvironment azureEnvironment)
+        public static async Task<AzureContext> SetupAzureContext(AzureEnvironment azureEnvironment, string restResponseFile)
         {
             ILogProvider logProvider = new FakeLogProvider();
             IStatusProvider statusProvider = new FakeStatusProvider();
             ISettingsProvider settingsProvider = new FakeSettingsProvider();
             AzureContext azureContext = new AzureContext(logProvider, statusProvider, settingsProvider);
             azureContext.AzureEnvironment = azureEnvironment;
-            FakeAzureRetriever fakeAzureRetriever = new FakeAzureRetriever(azureContext);
+            azureContext.TokenProvider = new FakeTokenProvider();
+            azureContext.AzureRetriever = new TestRetriever(azureContext);
+            azureContext.AzureRetriever.LoadRestCache(restResponseFile);
+
+            List<AzureSubscription> subscriptions = await azureContext.AzureRetriever.GetAzureARMSubscriptions();
+            await azureContext.SetSubscriptionContext(subscriptions[0]);
+            await azureContext.AzureRetriever.SetSubscriptionContext(subscriptions[0]);
 
             return azureContext;
         }

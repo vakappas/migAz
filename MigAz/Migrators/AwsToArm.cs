@@ -13,7 +13,7 @@ using MigAz.AWS.Generator;
 
 namespace MigAz.Migrators
 {
-    public partial class AwsToArm : IMigratorUserControl
+    public partial class AwsToArm : Azure.UserControls.IMigratorUserControl
     {
         private AwsToArmSaveSelectionProvider _saveSelectionProvider;
         private AwsToArmSaveSelectionProvider _telemetryProvider;
@@ -41,7 +41,7 @@ namespace MigAz.Migrators
 
             azureLoginContextViewer21.Bind(_AzureContextTargetARM);
 
-            this.TemplateGenerator = new AzureGenerator(_AzureContextTargetARM.AzureSubscription, _AzureContextTargetARM.AzureSubscription, LogProvider, StatusProvider, null, null); // _telemetryProvider, _appSettingsProvider);
+            this.TemplateGenerator = new AwsGenerator(LogProvider, StatusProvider);
 
             this.treeTargetARM.LogProvider = this.LogProvider;
             this.treeTargetARM.StatusProvider = this.StatusProvider;
@@ -54,9 +54,8 @@ namespace MigAz.Migrators
             this._PropertyPanel.AzureContext = _AzureContextTargetARM;
             this._PropertyPanel.TargetTreeView = treeTargetARM;
             this._PropertyPanel.PropertyChanged += _PropertyPanel_PropertyChanged;
-
-
         }
+
         private async Task _PropertyPanel_PropertyChanged()
         {
             if (_SourceAwsNode == null) // we are not going to update on every property bind during TreeView updates
@@ -64,9 +63,9 @@ namespace MigAz.Migrators
         }
 
 
-        private Task _AzureContextTargetARM_AfterAzureSubscriptionChange(AzureContext sender)
+        private async Task _AzureContextTargetARM_AfterAzureSubscriptionChange(AzureContext sender)
         {
-            throw new NotImplementedException();
+
         }
 
         public ImageList AzureResourceImageList
@@ -80,13 +79,7 @@ namespace MigAz.Migrators
                     treeTargetARM.ImageList = _AzureResourceImageList;
             }
         }
-        public async Task Bind()
-        {
-            _AzureContextTargetARM = new AzureContext(LogProvider, StatusProvider, null); // todo needs settings provider
-            await azureLoginContextViewer21.Bind(_AzureContextTargetARM);
 
-            //var tokenProvider = new InteractiveTokenProvider();
-        }
 
         private void AwsToArm_Load(object sender, EventArgs e)
         {
@@ -101,7 +94,7 @@ namespace MigAz.Migrators
 
         private async Task AlertIfNewVersionAvailable()
         {
-            string currentVersion = "2.2.10.0";
+            string currentVersion = "2.2.11.0";
             VersionCheck versionCheck = new VersionCheck(this.LogProvider);
             string newVersionNumber = await versionCheck.GetAvailableVersion("https://api.migaz.tools/v1/version/AWStoARM", currentVersion);
             if (versionCheck.IsVersionNewer(currentVersion, newVersionNumber))
@@ -151,8 +144,8 @@ namespace MigAz.Migrators
             TreeNode subscriptionNode = new TreeNode("AWS Subscription");
             treeSourceAWS.Nodes.Add(subscriptionNode);
 
-            AWSRetriever awsRetriever = new AWSRetriever();
-            awsRetriever.toname(accessKeyTextBox.Text.Trim(), secretKeyTextBox.Text.Trim(), subscriptionNode, this.LogProvider, this.StatusProvider);
+            AWSRetriever awsRetriever = new AWSRetriever(this.LogProvider, this.StatusProvider);
+            awsRetriever.toname(accessKeyTextBox.Text.Trim(), secretKeyTextBox.Text.Trim(), subscriptionNode);
 
             subscriptionNode.ExpandAll();
 
@@ -233,20 +226,6 @@ namespace MigAz.Migrators
             //        //}
 
             //    }
-        }
-
-        private void cmbRegion_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //Load the Region Items
-            Load_Items();
-
-            // If save selection option is enabled
-            //if (app.Default.SaveSelection)
-            //{
-            //    StatusProvider.UpdateStatus("BUSY: Reading saved selection");
-            //    _saveSelectionProvider.Read(cmbRegion.Text, ref lvwVirtualNetworks, ref lvwVirtualMachines);
-            //}
-
         }
 
         private void btnLogin_Click(object sender, EventArgs e)

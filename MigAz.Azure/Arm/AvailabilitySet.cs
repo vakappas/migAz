@@ -29,6 +29,10 @@ namespace MigAz.Azure.Arm
         {
             return this.Name;
         }
+        internal new async Task InitializeChildrenAsync(AzureContext azureContext)
+        {
+            await base.InitializeChildrenAsync(azureContext);
+        }
 
 
     }

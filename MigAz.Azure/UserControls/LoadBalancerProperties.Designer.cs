@@ -59,8 +59,9 @@
             this.networkSelectionControl1.ExistingARMVNetEnabled = true;
             this.networkSelectionControl1.Location = new System.Drawing.Point(0, 73);
             this.networkSelectionControl1.Name = "networkSelectionControl1";
-            this.networkSelectionControl1.Size = new System.Drawing.Size(310, 105);
+            this.networkSelectionControl1.Size = new System.Drawing.Size(310, 150);
             this.networkSelectionControl1.TabIndex = 5;
+            this.networkSelectionControl1.VirtualNetworkTarget = null;
             // 
             // cmbLoadBalancerType
             // 

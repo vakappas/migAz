@@ -8,6 +8,7 @@ using Amazon.EC2.Model;
 using Amazon.ElasticLoadBalancing;
 using Amazon.ElasticLoadBalancing.Model;
 using MigAz.Core.Interface;
+using System.Windows.Forms;
 
 namespace MigAz.AWS
 {
@@ -43,21 +44,9 @@ namespace MigAz.AWS
 
             _vpcs = GetAllVpcs();
             _instances = GetAllInstances();
-            // _volumes = GetAllVolumes();
-            // Application.DoEvents();
+            _volumes = GetAllVolumes();
+            Application.DoEvents();
             _Loadbalancers = GetAllLBs();
-        }
-
-        AwsObjectRetriever(IAmazonEC2 client)
-        {
-            //_logProvider = logProvider;
-            // _statusProvider = statusProvider;
-            _service = client;
-        }
-
-        AwsObjectRetriever(IAmazonElasticLoadBalancing client)
-        {
-            _LBservice = client;
         }
 
         #endregion
@@ -107,21 +96,6 @@ namespace MigAz.AWS
             }
         }
 
-        public DescribeLoadBalancersResponse Loadbalancers
-        {
-            get
-            {
-                return _Loadbalancers;
-            }
-            set
-            {
-                if (_Loadbalancers == null)
-                {
-                    _Loadbalancers = GetAllLBs();
-                }
-            }
-        }
-        
 
         public static IAmazonElasticLoadBalancing createLBClient(string accessKeyID, string secretKeyID, Amazon.RegionEndpoint region)
         {
@@ -338,12 +312,6 @@ namespace MigAz.AWS
 
         }
 
-        internal List<LoadBalancerDescription> getLBs(String vpcId)
-        {
-            _statusProvider.UpdateStatus("BUSY: Getting Loadbalancer details...");
-
-            return _Loadbalancers.LoadBalancerDescriptions;
-        }
 
         #endregion
 

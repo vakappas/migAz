@@ -1,6 +1,7 @@
 ﻿using MigAz.Azure.MigrationTarget;
 using MigAz.Core.Interface;
 using System.Collections.Generic;
+using System;
 
 namespace MigAz.Azure
 {
@@ -33,6 +34,28 @@ namespace MigAz.Azure
             }
 
             return null;
+        }
+
+        internal PublicIp SeekPublicIp(string sourceName)
+        {
+            foreach (PublicIp publicIp in PublicIPs)
+            {
+                if (publicIp.ToString() == sourceName)
+                    return publicIp;
+            }
+
+            return null;
+        }
+
+        internal bool ContainsLoadBalancer(LoadBalancer loadBalancer)
+        {
+            foreach (LoadBalancer exportArtifactLoadBalancer in LoadBalancers)
+            {
+                if (exportArtifactLoadBalancer.ToString() == loadBalancer.ToString())
+                    return true;
+            }
+
+            return false;
         }
     }
 }

@@ -52,17 +52,25 @@ namespace MigAz.Azure.UserControls
             {
                 _NetworkInterfaceTarget = value;
 
-                if (this.ExistingARMVNetEnabled == false ||
-                    _NetworkInterfaceTarget == null ||
-                    _NetworkInterfaceTarget.TargetSubnet == null ||
-                    _NetworkInterfaceTarget.TargetSubnet.GetType() == typeof(Azure.MigrationTarget.Subnet)
-                    )
+                if (_NetworkInterfaceTarget != null)
                 {
-                    this.SelectVNetInMigration();
-                }
-                else
-                {
-                    this.SelectExistingARMVNet();
+                    if (this.ExistingARMVNetEnabled == false ||
+                        _NetworkInterfaceTarget == null ||
+                        _NetworkInterfaceTarget.TargetSubnet == null ||
+                        _NetworkInterfaceTarget.TargetSubnet.GetType() == typeof(Azure.MigrationTarget.Subnet)
+                        )
+                    {
+                        this.SelectVNetInMigration();
+                    }
+                    else
+                    {
+                        this.SelectExistingARMVNet();
+                    }
+
+                    if (_NetworkInterfaceTarget != null)
+                    {
+                        cmbAllocationMethod.SelectedIndex = cmbAllocationMethod.FindString(_NetworkInterfaceTarget.TargetPrivateIPAllocationMethod);
+                    }
                 }
             }
         }
@@ -110,7 +118,8 @@ namespace MigAz.Azure.UserControls
                 }
             }
 
-            PropertyChanged();
+            if (PropertyChanged != null)
+                PropertyChanged();
         }
 
         private async void rbVNetInMigration_CheckedChanged(object sender, EventArgs e)
@@ -164,7 +173,8 @@ namespace MigAz.Azure.UserControls
                 #endregion
             }
 
-            PropertyChanged();
+            if (PropertyChanged != null)
+                PropertyChanged();
         }
 
         private async void rbExistingARMVNet_CheckedChanged(object sender, EventArgs e)
@@ -226,7 +236,8 @@ namespace MigAz.Azure.UserControls
 
             }
 
-            PropertyChanged();
+            if (PropertyChanged != null)
+                PropertyChanged();
         }
 
         private void cmbExistingArmSubnet_SelectedIndexChanged(object sender, EventArgs e)
@@ -253,8 +264,44 @@ namespace MigAz.Azure.UserControls
                 }
             }
 
-            PropertyChanged();
+            if (PropertyChanged != null)
+                PropertyChanged();
         }
 
+        private void cmbAllocationMethod_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_NetworkInterfaceTarget != null)
+            {
+                _NetworkInterfaceTarget.TargetPrivateIPAllocationMethod = cmbAllocationMethod.SelectedItem.ToString();
+                txtStaticIp.Enabled = cmbAllocationMethod.SelectedItem.ToString() == "Static";
+                if (txtStaticIp.Enabled)
+                    txtStaticIp.Text = _NetworkInterfaceTarget.TargetPrivateIpAddress;
+                else
+                    txtStaticIp.Text = String.Empty;
+            }
+
+            if (PropertyChanged != null)
+                PropertyChanged();
+        }
+
+        private void txtStaticIp_TextChanged(object sender, EventArgs e)
+        {
+            if (cmbAllocationMethod.SelectedItem.ToString() == "Static")
+            {
+                if (_NetworkInterfaceTarget != null)
+                    _NetworkInterfaceTarget.TargetPrivateIpAddress = txtStaticIp.Text.Trim();
+
+                if (PropertyChanged != null)
+                    PropertyChanged();
+            }
+        }
+
+        private void txtStaticIp_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (char.IsWhiteSpace(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
     }
 }

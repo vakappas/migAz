@@ -23,7 +23,6 @@ namespace MigAz.Azure.UserControls
         public NetworkInterfaceProperties()
         {
             InitializeComponent();
-            networkSelectionControl1.PropertyChanged += NetworkSelectionControl1_PropertyChanged;
         }
 
         private void NetworkSelectionControl1_PropertyChanged()
@@ -36,6 +35,8 @@ namespace MigAz.Azure.UserControls
             _AzureContext = azureContext;
             _TargetTreeView = targetTreeView;
             _TargetNetworkInterface = targetNetworkInterface;
+            networkSelectionControl1.PropertyChanged += NetworkSelectionControl1_PropertyChanged;
+
 
             if (_TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations.Count > 0)
             {
@@ -45,12 +46,6 @@ namespace MigAz.Azure.UserControls
 
             lblSourceName.Text = _TargetNetworkInterface.SourceName;
             txtTargetName.Text = _TargetNetworkInterface.TargetName;
-
-
-            if (_TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations.Count > 0)
-            {
-                cmbAllocationMethod.SelectedIndex = cmbAllocationMethod.FindString(_TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations[0].TargetPrivateIPAllocationMethod);
-            }
 
             if (_TargetNetworkInterface.SourceNetworkInterface != null)
             {
@@ -88,32 +83,6 @@ namespace MigAz.Azure.UserControls
             if (char.IsWhiteSpace(e.KeyChar))
             {
                 e.Handled = true;
-            }
-        }
-
-        private void cmbAllocationMethod_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (_TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations.Count > 0)
-            {
-                _TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations[0].TargetPrivateIPAllocationMethod = cmbAllocationMethod.SelectedItem.ToString();
-                txtStaticIp.Enabled = cmbAllocationMethod.SelectedItem.ToString() == "Static";
-                if (txtStaticIp.Enabled)
-                    txtStaticIp.Text = _TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations[0].TargetPrivateIpAddress;
-                else
-                    txtStaticIp.Text = String.Empty;
-            }
-
-            PropertyChanged();
-        }
-
-        private void txtStaticIp_TextChanged(object sender, EventArgs e)
-        {
-            if (cmbAllocationMethod.SelectedItem.ToString() == "Static")
-            {
-                if (_TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations.Count > 0)
-                    _TargetNetworkInterface.TargetNetworkInterfaceIpConfigurations[0].TargetPrivateIpAddress = txtStaticIp.Text.Trim();
-
-                PropertyChanged();
             }
         }
     }

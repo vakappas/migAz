@@ -29,9 +29,12 @@ namespace MigAz.Azure.UserControls
             try
             {
                 cboTargetLocation.Items.Clear();
-                foreach (Azure.Arm.Location armLocation in await azureContext.AzureRetriever.GetAzureARMLocations())
+                if (azureContext.AzureRetriever.SubscriptionContext != null)
                 {
-                    cboTargetLocation.Items.Add(armLocation);
+                    foreach (Azure.Arm.Location armLocation in await azureContext.AzureRetriever.GetAzureARMLocations())
+                    {
+                        cboTargetLocation.Items.Add(armLocation);
+                    }
                 }
             }
             catch (WebException)
@@ -41,9 +44,13 @@ namespace MigAz.Azure.UserControls
                 // is not yet update to support this call.  In the event the ARM location query fails, we will default to using ASM Location query.
 
                 cboTargetLocation.Items.Clear();
-                foreach (Azure.Asm.Location asmLocation in await azureContext.AzureRetriever.GetAzureASMLocations())
+
+                if (azureContext.AzureRetriever.SubscriptionContext != null)
                 {
-                    cboTargetLocation.Items.Add(asmLocation);
+                    foreach (Azure.Asm.Location asmLocation in await azureContext.AzureRetriever.GetAzureASMLocations())
+                    {
+                        cboTargetLocation.Items.Add(asmLocation);
+                    }
                 }
             }
 

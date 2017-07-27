@@ -38,10 +38,6 @@
             this.txtTargetName = new System.Windows.Forms.TextBox();
             this.lblSourceName = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.cmbAllocationMethod = new System.Windows.Forms.ComboBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.txtStaticIp = new System.Windows.Forms.TextBox();
             this.networkSelectionControl1 = new MigAz.Azure.UserControls.NetworkSelectionControl();
             this.SuspendLayout();
             // 
@@ -145,66 +141,19 @@
             this.label6.TabIndex = 32;
             this.label6.Text = "Source Name:";
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(4, 252);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(56, 13);
-            this.label1.TabIndex = 35;
-            this.label1.Text = "Allocation:";
-            // 
-            // cmbAllocationMethod
-            // 
-            this.cmbAllocationMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbAllocationMethod.FormattingEnabled = true;
-            this.cmbAllocationMethod.Items.AddRange(new object[] {
-            "Dynamic",
-            "Static"});
-            this.cmbAllocationMethod.Location = new System.Drawing.Point(89, 248);
-            this.cmbAllocationMethod.Margin = new System.Windows.Forms.Padding(2);
-            this.cmbAllocationMethod.Name = "cmbAllocationMethod";
-            this.cmbAllocationMethod.Size = new System.Drawing.Size(216, 21);
-            this.cmbAllocationMethod.TabIndex = 34;
-            this.cmbAllocationMethod.SelectedIndexChanged += new System.EventHandler(this.cmbAllocationMethod_SelectedIndexChanged);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(2, 276);
-            this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(50, 13);
-            this.label9.TabIndex = 37;
-            this.label9.Text = "Static IP:";
-            // 
-            // txtStaticIp
-            // 
-            this.txtStaticIp.Enabled = false;
-            this.txtStaticIp.Location = new System.Drawing.Point(89, 273);
-            this.txtStaticIp.Margin = new System.Windows.Forms.Padding(2);
-            this.txtStaticIp.MaxLength = 15;
-            this.txtStaticIp.Name = "txtStaticIp";
-            this.txtStaticIp.Size = new System.Drawing.Size(216, 20);
-            this.txtStaticIp.TabIndex = 36;
-            this.txtStaticIp.TextChanged += new System.EventHandler(this.txtStaticIp_TextChanged);
-            // 
             // networkSelectionControl1
             // 
+            this.networkSelectionControl1.ExistingARMVNetEnabled = true;
             this.networkSelectionControl1.Location = new System.Drawing.Point(2, 144);
             this.networkSelectionControl1.Name = "networkSelectionControl1";
-            this.networkSelectionControl1.Size = new System.Drawing.Size(310, 105);
+            this.networkSelectionControl1.Size = new System.Drawing.Size(310, 150);
             this.networkSelectionControl1.TabIndex = 38;
+            this.networkSelectionControl1.VirtualNetworkTarget = null;
             // 
             // NetworkInterfaceProperties
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.label9);
-            this.Controls.Add(this.txtStaticIp);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.cmbAllocationMethod);
             this.Controls.Add(this.lblSourceName);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.lblARMVirtualNetworkName);
@@ -218,7 +167,7 @@
             this.Controls.Add(this.networkSelectionControl1);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "NetworkInterfaceProperties";
-            this.Size = new System.Drawing.Size(310, 306);
+            this.Size = new System.Drawing.Size(310, 354);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -235,10 +184,6 @@
         private System.Windows.Forms.TextBox txtTargetName;
         private System.Windows.Forms.Label lblSourceName;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox cmbAllocationMethod;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox txtStaticIp;
         private NetworkSelectionControl networkSelectionControl1;
     }
 }

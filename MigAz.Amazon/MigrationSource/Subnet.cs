@@ -12,7 +12,7 @@ namespace MigAz.AWS.MigrationSource
     {
         private Amazon.EC2.Model.Subnet _AmazonSubnet;
 
-        public Subnet() { }
+        private Subnet() { }
 
         public Subnet(AwsObjectRetriever awsObjectRetriever, Amazon.EC2.Model.Subnet amazonSubnet)
         {
@@ -42,6 +42,11 @@ namespace MigAz.AWS.MigrationSource
 
                 return this.Id;
             }
+        }
+
+        public string AddressPrefix
+        {
+            get { return _AmazonSubnet.CidrBlock; }
         }
     }
 }

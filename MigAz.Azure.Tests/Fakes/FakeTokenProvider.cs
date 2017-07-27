@@ -7,11 +7,20 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using MigAz.Azure.Asm;
 using MigAz.Azure.Interface;
 using MigAz.Azure;
+using MigAz.Core.Interface;
 
 namespace MigAz.Tests.Fakes
 {
     class FakeTokenProvider : ITokenProvider
     {
+        public AuthenticationResult AuthenticationResult
+        {
+            get { return null; }
+            set => throw new NotImplementedException();
+        }
+
+        public string AccessToken => "FakeTokenValue";
+
         public async Task<AuthenticationResult> GetToken(AzureSubscription azureSubscription)
         {
             return null;
@@ -19,12 +28,27 @@ namespace MigAz.Tests.Fakes
 
         public async Task<AuthenticationResult> GetCommonToken(string azureEnvironment)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public async Task<List<AzureSubscription>> GetSubscriptions()
         {
             return new List<AzureSubscription>();
+        }
+
+        public Task<AuthenticationResult> LoginAzureProvider(AzureEnvironment azureEnvironment)
+        {
+            return null;
+        }
+
+        public Task<AuthenticationResult> GetGraphToken(AzureEnvironment azureEnvironment, string v)
+        {
+            return null;
+        }
+
+        public Task<AuthenticationResult> GetAzureToken(AzureEnvironment azureEnvironment, string v)
+        {
+            return null;
         }
     }
 }

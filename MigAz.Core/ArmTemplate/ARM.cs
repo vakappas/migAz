@@ -389,6 +389,7 @@ namespace MigAz.Core.ArmTemplate
             type = "Microsoft.Compute/virtualMachines";
             apiVersion = "2015-06-15"; // TODO apiVersion = "2016-04-30-preview";
         }
+        public Dictionary<string, string> plan;
     }
 
     public class VirtualMachine_Properties

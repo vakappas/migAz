@@ -35,6 +35,10 @@
             this.rbVNetInMigration = new System.Windows.Forms.RadioButton();
             this.cmbExistingArmSubnet = new System.Windows.Forms.ComboBox();
             this.cmbExistingArmVNets = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.txtStaticIp = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.cmbAllocationMethod = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // label8
@@ -113,10 +117,60 @@
             this.cmbExistingArmVNets.TabIndex = 32;
             this.cmbExistingArmVNets.SelectedIndexChanged += new System.EventHandler(this.cmbExistingArmVNets_SelectedIndexChanged);
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(0, 132);
+            this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(50, 13);
+            this.label9.TabIndex = 41;
+            this.label9.Text = "Static IP:";
+            // 
+            // txtStaticIp
+            // 
+            this.txtStaticIp.Enabled = false;
+            this.txtStaticIp.Location = new System.Drawing.Point(87, 129);
+            this.txtStaticIp.Margin = new System.Windows.Forms.Padding(2);
+            this.txtStaticIp.MaxLength = 15;
+            this.txtStaticIp.Name = "txtStaticIp";
+            this.txtStaticIp.Size = new System.Drawing.Size(216, 20);
+            this.txtStaticIp.TabIndex = 40;
+            this.txtStaticIp.TextChanged += new System.EventHandler(this.txtStaticIp_TextChanged);
+            this.txtStaticIp.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtStaticIp_KeyPress);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(2, 108);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(56, 13);
+            this.label1.TabIndex = 39;
+            this.label1.Text = "Allocation:";
+            // 
+            // cmbAllocationMethod
+            // 
+            this.cmbAllocationMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbAllocationMethod.FormattingEnabled = true;
+            this.cmbAllocationMethod.Items.AddRange(new object[] {
+            "Dynamic",
+            "Static"});
+            this.cmbAllocationMethod.Location = new System.Drawing.Point(87, 104);
+            this.cmbAllocationMethod.Margin = new System.Windows.Forms.Padding(2);
+            this.cmbAllocationMethod.Name = "cmbAllocationMethod";
+            this.cmbAllocationMethod.Size = new System.Drawing.Size(216, 21);
+            this.cmbAllocationMethod.TabIndex = 38;
+            this.cmbAllocationMethod.SelectedIndexChanged += new System.EventHandler(this.cmbAllocationMethod_SelectedIndexChanged);
+            // 
             // NetworkSelectionControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.txtStaticIp);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.cmbAllocationMethod);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label2);
@@ -125,7 +179,7 @@
             this.Controls.Add(this.cmbExistingArmSubnet);
             this.Controls.Add(this.cmbExistingArmVNets);
             this.Name = "NetworkSelectionControl";
-            this.Size = new System.Drawing.Size(310, 105);
+            this.Size = new System.Drawing.Size(310, 163);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -140,5 +194,9 @@
         private System.Windows.Forms.RadioButton rbVNetInMigration;
         private System.Windows.Forms.ComboBox cmbExistingArmSubnet;
         private System.Windows.Forms.ComboBox cmbExistingArmVNets;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox txtStaticIp;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox cmbAllocationMethod;
     }
 }

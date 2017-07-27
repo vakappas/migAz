@@ -152,18 +152,21 @@ namespace MigAz.Azure.UserControls
                     }
 
                     // Note, this could probably be object compares, but was written this was to get it done.  Possible future change to object compares
-                    if (nodeObject.GetType() == sourceObject.GetType())
+                    if (nodeObject != null && sourceObject != null)
                     {
-                        if (sourceObject.GetType() == typeof(Azure.MigrationTarget.ResourceGroup))
-                            treeTargetARM.SelectedNode = treeNode;
-                        else if (sourceObject.GetType() == typeof(Azure.MigrationTarget.VirtualMachine) && sourceObject.ToString() == nodeObject.ToString())
-                            treeTargetARM.SelectedNode = treeNode;
-                        else if (sourceObject.GetType() == typeof(Azure.MigrationTarget.Disk) && sourceObject.ToString() == nodeObject.ToString())
-                            treeTargetARM.SelectedNode = treeNode;
-                        else if (sourceObject.GetType() == typeof(Azure.MigrationTarget.NetworkInterface) && sourceObject.ToString() == nodeObject.ToString())
-                            treeTargetARM.SelectedNode = treeNode;
-                        else if (sourceObject.GetType() == typeof(Azure.MigrationTarget.LoadBalancer) && sourceObject.ToString() == nodeObject.ToString())
-                            treeTargetARM.SelectedNode = treeNode;
+                        if (nodeObject.GetType() == sourceObject.GetType())
+                        {
+                            if (sourceObject.GetType() == typeof(Azure.MigrationTarget.ResourceGroup))
+                                treeTargetARM.SelectedNode = treeNode;
+                            else if (sourceObject.GetType() == typeof(Azure.MigrationTarget.VirtualMachine) && sourceObject.ToString() == nodeObject.ToString())
+                                treeTargetARM.SelectedNode = treeNode;
+                            else if (sourceObject.GetType() == typeof(Azure.MigrationTarget.Disk) && sourceObject.ToString() == nodeObject.ToString())
+                                treeTargetARM.SelectedNode = treeNode;
+                            else if (sourceObject.GetType() == typeof(Azure.MigrationTarget.NetworkInterface) && sourceObject.ToString() == nodeObject.ToString())
+                                treeTargetARM.SelectedNode = treeNode;
+                            else if (sourceObject.GetType() == typeof(Azure.MigrationTarget.LoadBalancer) && sourceObject.ToString() == nodeObject.ToString())
+                                treeTargetARM.SelectedNode = treeNode;
+                        }
                     }
                 }
                 SeekAlertSourceRecursive(sourceObject, treeNode.Nodes);

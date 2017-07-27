@@ -121,6 +121,9 @@ namespace MigAz.Azure.Asm
 
         public virtual VirtualMachine GetVirtualMachine(string virtualMachineName)
         {
+            if (virtualMachineName == null)
+                return null;
+
             foreach (VirtualMachine asmVirtualMachine in this.VirtualMachines)
             {
                 if (asmVirtualMachine.RoleName == virtualMachineName)
@@ -149,33 +152,41 @@ namespace MigAz.Azure.Asm
                     {
 
                         XmlNodeList roles = _XmlNode.SelectNodes("//Deployments/Deployment")[0].SelectNodes("RoleList/Role");
-
-                        foreach (XmlNode role in roles)
+                        if (roles != null)
                         {
-                            string virtualmachinename = role.SelectSingleNode("RoleName").InnerText;
+                            foreach (XmlNode role in roles)
+                            {
+                                string virtualmachinename = role.SelectSingleNode("RoleName").InnerText;
 
-                            VirtualMachine asmVirtualMachine = await _AzureContext.AzureRetriever.GetAzureAsmVirtualMachine(this, virtualmachinename);
-                            _VirtualMachines.Add(asmVirtualMachine);
+                                VirtualMachine asmVirtualMachine = await _AzureContext.AzureRetriever.GetAzureAsmVirtualMachine(this, virtualmachinename);
+                                _VirtualMachines.Add(asmVirtualMachine);
+                            }
                         }
                     }
                 }
             }
 
             List<ReservedIP> asmReservedIPs = await _AzureContext.AzureRetriever.GetAzureAsmReservedIPs();
-            foreach (ReservedIP asmReservedIP in asmReservedIPs)
+            if (asmReservedIPs != null)
             {
-                if (asmReservedIP.ServiceName == this.Name)
+                foreach (ReservedIP asmReservedIP in asmReservedIPs)
                 {
-                    _AsmReservedIP = asmReservedIP;
+                    if (asmReservedIP.ServiceName == this.Name)
+                    {
+                        _AsmReservedIP = asmReservedIP;
+                    }
                 }
             }
 
             XmlNodeList loadBalancersXml = _XmlNode.SelectNodes("//Deployments/Deployment/LoadBalancers/LoadBalancer");
 
-            foreach (XmlNode loadBalancerXml in loadBalancersXml)
+            if (loadBalancersXml != null)
             {
-                LoadBalancer asmLoadBalancer = new LoadBalancer(_AzureContext, _AsmVirtualNetwork, loadBalancerXml);
-                _LoadBalancers.Add(asmLoadBalancer);
+                foreach (XmlNode loadBalancerXml in loadBalancersXml)
+                {
+                    LoadBalancer asmLoadBalancer = new LoadBalancer(_AzureContext, _AsmVirtualNetwork, loadBalancerXml);
+                    _LoadBalancers.Add(asmLoadBalancer);
+                }
             }
         }
 

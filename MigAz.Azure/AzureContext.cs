@@ -12,7 +12,7 @@ namespace MigAz.Azure
         private AzureTenant _AzureTenant;
         private AzureSubscription _AzureSubscription;
         private AzureRetriever _AzureRetriever;
-        private AzureTokenProvider _TokenProvider;
+        private ITokenProvider _TokenProvider;
         private ILogProvider _LogProvider;
         private IStatusProvider _StatusProvider;
         private ISettingsProvider _SettingsProvider;
@@ -86,11 +86,13 @@ namespace MigAz.Azure
         public AzureRetriever AzureRetriever
         {
             get { return _AzureRetriever; }
+            set { _AzureRetriever = value; }
         }
 
-        public AzureTokenProvider TokenProvider
+        public ITokenProvider TokenProvider
         {
             get { return _TokenProvider; }
+            set { _TokenProvider = value; }
         }
 
         public ILogProvider LogProvider

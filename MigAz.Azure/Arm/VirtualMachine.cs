@@ -13,7 +13,6 @@ namespace MigAz.Azure.Arm
     {
         private List<IArmDisk> _DataDisks = new List<IArmDisk>();
         private IArmDisk _OSVirtualHardDisk;
-        private NetworkSecurityGroup _NetworkSecurityGroup;
         private List<NetworkInterface> _NetworkInterfaceCards = new List<NetworkInterface>();
 
         private VirtualMachine() : base(null) { }
@@ -24,6 +23,14 @@ namespace MigAz.Azure.Arm
             foreach (JToken dataDiskToken in ResourceToken["properties"]["storageProfile"]["dataDisks"])
             {
                 _DataDisks.Add(new Disk(dataDiskToken));
+            }
+        }
+
+        public bool HasPlan
+        {
+            get
+            {
+                return ResourceToken["plan"] != null;
             }
         }
 
@@ -48,7 +55,6 @@ namespace MigAz.Azure.Arm
         }
 
         public List<IArmDisk> DataDisks => _DataDisks;
-        public NetworkSecurityGroup NetworkSecurityGroup => _NetworkSecurityGroup;
         public IArmDisk OSVirtualHardDisk => _OSVirtualHardDisk;
         public List<NetworkInterface> NetworkInterfaces => _NetworkInterfaceCards;
 
@@ -74,7 +80,7 @@ namespace MigAz.Azure.Arm
             await base.InitializeChildrenAsync(azureContext);
 
             if (this.AvailabilitySetId != String.Empty)
-                this.AvailabilitySet = azureContext.AzureRetriever.GetAzureARMAvailabilitySet(this.AvailabilitySetId);
+                this.AvailabilitySet = azureContext.AzureRetriever.GetAzureARMAvailabilitySet(azureContext.AzureSubscription, this.AvailabilitySetId);
 
             if (this.AvailabilitySet != null)
                 this.AvailabilitySet.VirtualMachines.Add(this);

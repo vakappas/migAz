@@ -193,6 +193,11 @@ namespace MigAz.Azure.Asm
             }
         }
 
+        public String Location
+        {
+            get { return _AsmCloudService.Location; }
+        }
+
         public string AvailabilitySetName
         {
             get

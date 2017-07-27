@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using MigAz.Azure.Interface;
 using MigAz.Core.Interface;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Xml;
 
 namespace MigAz.Azure
 {
-    public class AzureTokenProvider // : ITokenProvider
+    public class AzureTokenProvider : ITokenProvider
     {
         private const string strReturnUrl = "urn:ietf:wg:oauth:2.0:oob";
         private const string strClientId = "1950a258-227b-4e31-a9cf-717495945fc2";
@@ -29,7 +30,18 @@ namespace MigAz.Azure
             set { _AuthenticationResult = value; }
         }
 
-        public async Task GetToken(AzureSubscription azureSubscription)
+        public string AccessToken
+        {
+            get
+            {
+                if (this.AuthenticationResult == null)
+                    return String.Empty;
+
+                return this.AuthenticationResult.AccessToken;
+            }
+        }
+
+        public async Task<AuthenticationResult> GetToken(AzureSubscription azureSubscription)
         {
             _LogProvider.WriteLog("GetToken", "Start token request");
 
@@ -51,9 +63,11 @@ namespace MigAz.Azure
             _AuthenticationResult = await context.AcquireTokenAsync(AzureServiceUrls.GetASMServiceManagementUrl(azureSubscription.AzureEnvironment), strClientId, new Uri(strReturnUrl), platformParams);
 
             _LogProvider.WriteLog("GetToken", "End token request");
+
+            return _AuthenticationResult;
         }
 
-        internal async Task<AuthenticationResult> LoginAzureProvider(AzureEnvironment azureEnvironment)
+        public async Task<AuthenticationResult> LoginAzureProvider(AzureEnvironment azureEnvironment)
         {
             _LogProvider.WriteLog("LoginAzureProvider", "Start token request");
             _LogProvider.WriteLog("LoginAzureProvider", "Azure Environment: " + azureEnvironment.ToString());
@@ -77,7 +91,7 @@ namespace MigAz.Azure
             return _AuthenticationResult;
         }
 
-        internal async Task<AuthenticationResult> GetGraphToken(AzureEnvironment azureEnvironment, string tenantId)
+        public async Task<AuthenticationResult> GetGraphToken(AzureEnvironment azureEnvironment, string tenantId)
         {
             _LogProvider.WriteLog("GetGraphToken", "Start token request");
             _LogProvider.WriteLog("GetGraphToken", "Azure Environment: " + azureEnvironment.ToString());
@@ -100,7 +114,7 @@ namespace MigAz.Azure
             return authenticationResult;
         }
 
-        internal async Task<AuthenticationResult> GetAzureToken(AzureEnvironment azureEnvironment, string tenantId)
+        public async Task<AuthenticationResult> GetAzureToken(AzureEnvironment azureEnvironment, string tenantId)
         {
             _LogProvider.WriteLog("GetAzureToken", "Start token request");
             _LogProvider.WriteLog("GetAzureToken", "Azure Environment: " + azureEnvironment.ToString());

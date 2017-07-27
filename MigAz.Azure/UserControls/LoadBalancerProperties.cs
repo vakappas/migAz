@@ -22,7 +22,6 @@ namespace MigAz.Azure.UserControls
         public LoadBalancerProperties()
         {
             InitializeComponent();
-            networkSelectionControl1.PropertyChanged += NetworkSelectionControl1_PropertyChanged;
         }
 
         private void NetworkSelectionControl1_PropertyChanged()
@@ -33,6 +32,7 @@ namespace MigAz.Azure.UserControls
 
         internal async Task Bind(AzureContext azureContext, TargetTreeView targetTreeView)
         {
+            networkSelectionControl1.PropertyChanged += NetworkSelectionControl1_PropertyChanged;
             _AzureContext = azureContext;
             _TargetTreeView = targetTreeView;
         }

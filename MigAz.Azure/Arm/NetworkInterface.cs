@@ -31,6 +31,9 @@ namespace MigAz.Azure.Arm
             {
                 await networkInterfaceIpConfiguration.InitializeChildrenAsync(azureContext);
             }
+
+            if (this.NetworkSecurityGroupId != String.Empty)
+                this.NetworkSecurityGroup = await azureContext.AzureRetriever.GetAzureARMNetworkSecurityGroup(this.NetworkSecurityGroupId);
         }
 
         public string EnableIPForwarding => (string)ResourceToken["properties"]["enableIPForwarding"];
@@ -62,14 +65,26 @@ namespace MigAz.Azure.Arm
             }
         }
 
-        public NetworkSecurityGroup NetworkSecurityGroup
-        {
-            get;set;
-        }
-
         public override string ToString()
         {
             return this.Name;
+        }
+
+        private string NetworkSecurityGroupId
+        {
+            get
+            {
+                if (this.ResourceToken["properties"]["networkSecurityGroup"] == null)
+                    return String.Empty;
+
+                return (string)this.ResourceToken["properties"]["networkSecurityGroup"]["id"];
+            }
+        }
+
+        public NetworkSecurityGroup NetworkSecurityGroup
+        {
+            get;
+            private set;
         }
     }
 }
