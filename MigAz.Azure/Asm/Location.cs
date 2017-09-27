@@ -1,4 +1,5 @@
 ﻿using MigAz.Azure.Interface;
+using MigAz.Core.Interface;
 using System.Xml;
 
 namespace MigAz.Azure.Asm

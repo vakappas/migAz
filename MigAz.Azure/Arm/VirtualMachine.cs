@@ -14,6 +14,8 @@ namespace MigAz.Azure.Arm
         private List<IArmDisk> _DataDisks = new List<IArmDisk>();
         private IArmDisk _OSVirtualHardDisk;
         private List<NetworkInterface> _NetworkInterfaceCards = new List<NetworkInterface>();
+        private VMSize _VMSize;
+
 
         private VirtualMachine() : base(null) { }
 
@@ -36,7 +38,13 @@ namespace MigAz.Azure.Arm
 
         public string Type => (string)ResourceToken["type"];
         public Guid VmId => new Guid((string)ResourceToken["properties"]["vmId"]);
-        public string VmSize => (string)ResourceToken["properties"]["hardwareProfile"]["vmSize"];
+        private string VmSizeString => (string)ResourceToken["properties"]["hardwareProfile"]["vmSize"];
+        public VMSize VmSize
+        {
+            get { return _VMSize; }
+            set { _VMSize = value;  }
+        }
+
         public string OSVirtualHardDiskOS => (string)ResourceToken["properties"]["storageProfile"]["osDisk"]["osType"];
 
         internal string AvailabilitySetId
@@ -75,6 +83,7 @@ namespace MigAz.Azure.Arm
                 return null;
             }
         }
+
         internal new async Task InitializeChildrenAsync(AzureContext azureContext)
         {
             await base.InitializeChildrenAsync(azureContext);
@@ -97,6 +106,12 @@ namespace MigAz.Azure.Arm
                 NetworkInterface networkInterface = await azureContext.AzureRetriever.GetAzureARMNetworkInterface((string)networkInterfaceToken["id"]);
                 networkInterface.VirtualMachine = this;
                 _NetworkInterfaceCards.Add(networkInterface);
+            }
+
+            // Seek the VmSize object that corresponds to the VmSize String obtained from the VM Json
+            if (this.ResourceGroup != null && this.ResourceGroup.Location != null && this.ResourceGroup.Location.VMSizes != null)
+            {
+                this.VmSize = this.ResourceGroup.Location.VMSizes.Where(a => a.Name == this.VmSizeString).FirstOrDefault();
             }
 
             return;

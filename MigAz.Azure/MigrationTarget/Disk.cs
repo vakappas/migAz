@@ -13,7 +13,7 @@ namespace MigAz.Azure.MigrationTarget
         private string _TargetName = String.Empty;
         private Int32 _DiskSizeInGB = 0;
 
-        private Disk() { }
+        public Disk() { }
 
         public Disk(Asm.Disk sourceDisk)
         {
@@ -87,8 +87,9 @@ namespace MigAz.Azure.MigrationTarget
                 if (value < 0)
                     throw new ArgumentException("DiskSizeInGB cannot be negative.");
 
-                if (value > 1023)
-                    throw new ArgumentException("DiskSizeInGB cannot be greater than 1023.");
+                // https://azure.microsoft.com/en-us/blog/azure-introduces-new-disks-sizes-up-to-4tb/
+                if (value > 4095)
+                    throw new ArgumentException("DiskSizeInGB cannot be greater than 4095 GB.");
                 
                 _DiskSizeInGB = value;
             }
@@ -126,6 +127,14 @@ namespace MigAz.Azure.MigrationTarget
             get
             {
                 return "https://" + TargetStorageAccount.ToString() + "." + TargetStorageAccount.BlobStorageNamespace + "/vhds/" + this.TargetStorageAccountBlob;
+            }
+        }
+
+        public bool IsManagedDisk
+        {
+            get
+            {
+                return this.TargetStorageAccount != null && this.TargetStorageAccount.GetType() == typeof(Azure.MigrationTarget.ManagedDisk);
             }
         }
 

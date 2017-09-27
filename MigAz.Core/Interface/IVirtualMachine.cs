@@ -2,6 +2,5 @@
 {
     public interface IVirtualMachine
     {
-        string Location { get; }
     }
 }

@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MigAz.Azure.Interface
+namespace MigAz.Core.Interface
 {
     public interface ILocation
     {
         string Name { get; }
 
         string DisplayName { get; }
-
     }
 }

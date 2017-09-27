@@ -24,6 +24,7 @@ namespace MigAz.Core.ArmTemplate
         public const string ProviderVirtualMachines = "/providers/Microsoft.Compute/virtualMachines/";
         public const string ProviderManagedDisks = "/providers/Microsoft.Compute/disks/";
         public const string ProviderGatewayConnection = "/providers/Microsoft.Network/connections/";
+        public const string ProviderVMSizes = "/providers/Microsoft.Compute/locations/{0}/vmSizes/";
         public const string GatewaySubnetName = "GatewaySubnet";
     }
 }

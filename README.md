@@ -34,6 +34,10 @@ In case of any issues during the deployment of the export.JSON you need to troub
 
 
 ## Release Notes
+### v2.2.14.0
+ - Added Storage Account Resource Group Name into copyblobdetails.json and removed as BlobCopy.ps1 parameter to resolve use of existing storage accounts in other Resource Groups(s).
+ - Incrased maximum disk size from 1023 to 4095 per Azure support for 4 TB drives.
+
 ### v2.2.12.0
  - Storage Account property selection now only allows selection from existing Storage Account(s) in "same" target location (same Azure Data Center as the Target Resource Group is targeted for)
  - Generates storageaccounts.json

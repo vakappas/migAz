@@ -25,6 +25,7 @@ namespace MigAz.Azure.Asm
         private Subnet _SourceSubnet;
         private String _NetworkSecurityGroupName = String.Empty;
         private NetworkSecurityGroup _AsmNetworkSecurityGroup = null;
+        private RoleSize _RoleSize;
 
         #endregion
 
@@ -150,6 +151,8 @@ namespace MigAz.Azure.Asm
 
             if (this.NetworkSecurityGroupName != String.Empty)
                 _AsmNetworkSecurityGroup = await _AzureContext.AzureRetriever.GetAzureAsmNetworkSecurityGroup(this.NetworkSecurityGroupName);
+
+            this.RoleSize = await _AzureContext.AzureRetriever.GetAzureASMRoleSize(this.RoleSizeString);
         }
 
         #region Properties
@@ -221,9 +224,21 @@ namespace MigAz.Azure.Asm
             get { return _XmlNode.SelectSingleNode("//RoleName").InnerText; }
         }
 
-        public string RoleSize
+        private string RoleSizeString
         {
             get { return _XmlNode.SelectSingleNode("//RoleSize").InnerText; }
+        }
+
+        public RoleSize RoleSize
+        {
+            get
+            {
+                return _RoleSize;
+            }
+            private set
+            {
+                _RoleSize = value;
+            }
         }
 
         public bool EnabledIpForwarding

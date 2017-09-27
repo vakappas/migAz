@@ -94,7 +94,7 @@ namespace MigAz.AWS.Generator
                         vpcTreeNode.SelectedImageKey = "VirtualNetwork";
                         amazonRegionNode.Nodes.Add(vpcTreeNode);
 
-                    //    // todo now russell, this is foreach subnet
+                    //    // todo, this is foreach subnet
                     //    foreach (Subnet subnet in subnets)
                     //    {
                     //        //QUES: Single Sec group?

@@ -11,7 +11,7 @@ namespace MigAz.Azure.MigrationTarget
     public class ResourceGroup : IMigrationTarget
     {
         private String _TargetName = String.Empty;
-        private ILocation _TargetLocation;
+        private Arm.Location _TargetLocation;
 
         public ResourceGroup()
         {
@@ -29,7 +29,7 @@ namespace MigAz.Azure.MigrationTarget
             set { _TargetName = value.Trim().Replace(" ", String.Empty); }
         }
 
-        public ILocation TargetLocation
+        public Arm.Location TargetLocation
         {
             get { return _TargetLocation; }
             set { _TargetLocation = value; }

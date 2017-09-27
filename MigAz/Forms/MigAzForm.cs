@@ -212,10 +212,11 @@ namespace MigAz.Forms
                     return;
                 }
 
+                migrator.TemplateGenerator.OutputDirectory = txtDestinationFolder.Text;
+
                 // We are refreshing both the MemoryStreams and the Output Tabs via this call, prior to writing to files
                 btnRefreshOutput_Click(this, null);
 
-                migrator.TemplateGenerator.OutputDirectory = txtDestinationFolder.Text;
                 migrator.TemplateGenerator.Write();
 
                 StatusProvider.UpdateStatus("Ready");
@@ -305,7 +306,7 @@ namespace MigAz.Forms
                             webBrowser.ScrollBarsEnabled = true;
                             tabPage.Controls.Add(webBrowser);
                         }
-                        else if (templateStream.Key.EndsWith(".json"))
+                        else if (templateStream.Key.EndsWith(".json") || templateStream.Key.EndsWith(".ps1"))
                         {
                             TextBox textBox = new TextBox();
                             textBox.Width = tabOutputResults.Width - 15;

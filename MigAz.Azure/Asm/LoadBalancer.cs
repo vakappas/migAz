@@ -17,8 +17,6 @@ namespace MigAz.Azure.Asm
             this._AsmVirtualNetwork = asmVirtualNetwork;
             this._XmlNode = loadBalancerXml;
 
-            this.TargetName = this.SubnetName;
-
             if (_AsmVirtualNetwork != null)
             {
                 foreach (Subnet subnet in _AsmVirtualNetwork.Subnets)
@@ -37,15 +35,9 @@ namespace MigAz.Azure.Asm
             get { return _AsmSubnet; }
         }
 
-        public string TargetName
-        {
-            get { return _TargetName; }
-            set { _TargetName = value; }
-        }
-
         public string ToString()
         {
-            return this.TargetName + this._AzureContext.SettingsProvider.LoadBalancerSuffix;
+            return this.SubnetName;
         }
 
         private string SubnetName

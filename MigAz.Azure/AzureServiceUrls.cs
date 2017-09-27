@@ -25,7 +25,7 @@ namespace MigAz.Azure
         {
             {  "AzureCloud", new[] { "https://management.core.windows.net/", "https://management.azure.com/", "https://login.microsoftonline.com/", "blob.core.windows.net", "https://graph.windows.net/" } },
             // China Endpoints - https://msdn.microsoft.com/en-us/library/azure/dn578439.aspx
-            {  "AzureChinaCloud", new[] { "https://management.core.chinacloudapi.cn/", "https://management.chinacloudapi.cn/", "https://login.chinacloudapi.cn/", "blob.core.chinacloudapi.cn", "https://graph.windows.net/" } },
+            {  "AzureChinaCloud", new[] { "https://management.core.chinacloudapi.cn/", "https://management.chinacloudapi.cn/", "https://login.chinacloudapi.cn/", "blob.core.chinacloudapi.cn", "https://graph.chinacloudapi.cn/" } },
             // Germany Endpoints - https://blogs.msdn.microsoft.com/azuregermany/2016/08/18/endpoints-in-microsoft-cloud-germany/
             {  "AzureGermanCloud", new[] { "https://management.core.cloudapi.de/", "https://management.microsoftazure.de/",  "https://login.microsoftonline.de/", "blob.core.cloudapi.de", "https://graph.windows.net/" } },
             // US Gov Endpoints - https://docs.microsoft.com/en-us/azure/azure-government/documentation-government-developer-guide

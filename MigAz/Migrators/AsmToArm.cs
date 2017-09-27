@@ -257,7 +257,7 @@ namespace MigAz.Migrators
 
         private async Task AlertIfNewVersionAvailable()
         {
-            string currentVersion = "2.2.12.0";
+            string currentVersion = "2.2.14.0";
             VersionCheck versionCheck = new VersionCheck(this.LogProvider);
             string newVersionNumber = await versionCheck.GetAvailableVersion("https://api.migaz.tools/v1/version", currentVersion);
             if (versionCheck.IsVersionNewer(currentVersion, newVersionNumber))
@@ -913,7 +913,8 @@ namespace MigAz.Migrators
 
                         foreach (Azure.MigrationTarget.NetworkSecurityGroup targetNetworkSecurityGroup in _AzureContextSourceASM.AzureRetriever.AsmTargetNetworkSecurityGroups)
                         {
-                            TreeNode parentNode = GetDataCenterTreeViewNode(subscriptionNodeASM, targetNetworkSecurityGroup.SourceNetworkSecurityGroup.Location, "Network Security Groups");
+                            Azure.Asm.NetworkSecurityGroup asmNetworkSecurityGroup = (Azure.Asm.NetworkSecurityGroup)targetNetworkSecurityGroup.SourceNetworkSecurityGroup;
+                            TreeNode parentNode = GetDataCenterTreeViewNode(subscriptionNodeASM, asmNetworkSecurityGroup.Location, "Network Security Groups");
 
                             TreeNode tnNetworkSecurityGroup = new TreeNode(targetNetworkSecurityGroup.SourceName);
                             tnNetworkSecurityGroup.Name = targetNetworkSecurityGroup.SourceName;
@@ -924,7 +925,8 @@ namespace MigAz.Migrators
 
                         foreach (Azure.MigrationTarget.VirtualNetwork targetVirtualNetwork in _AzureContextSourceASM.AzureRetriever.AsmTargetVirtualNetworks)
                         {
-                            TreeNode parentNode = GetDataCenterTreeViewNode(subscriptionNodeASM, targetVirtualNetwork.SourceVirtualNetwork.Location, "Virtual Networks");
+                            Azure.Asm.VirtualNetwork asmVirtualNetwork = (Azure.Asm.VirtualNetwork)targetVirtualNetwork.SourceVirtualNetwork;
+                            TreeNode parentNode = GetDataCenterTreeViewNode(subscriptionNodeASM, asmVirtualNetwork.Location, "Virtual Networks");
 
                             TreeNode tnVirtualNetwork = new TreeNode(targetVirtualNetwork.SourceName);
                             tnVirtualNetwork.Name = targetVirtualNetwork.SourceName;
@@ -947,7 +949,8 @@ namespace MigAz.Migrators
 
                         foreach (Azure.MigrationTarget.VirtualMachine targetVirtualMachine in _AzureContextSourceASM.AzureRetriever.AsmTargetVirtualMachines)
                         {
-                            TreeNode parentNode = GetDataCenterTreeViewNode(subscriptionNodeASM, targetVirtualMachine.Source.Location, "Cloud Services");
+                            Azure.Asm.VirtualMachine asmVirtualMachine = (Azure.Asm.VirtualMachine)targetVirtualMachine.Source;
+                            TreeNode parentNode = GetDataCenterTreeViewNode(subscriptionNodeASM, asmVirtualMachine.Location, "Cloud Services");
                             TreeNode[] cloudServiceNodeSearch = parentNode.Nodes.Find(targetVirtualMachine.TargetAvailabilitySet.TargetName, false);
                             TreeNode cloudServiceNode = null;
                             if (cloudServiceNodeSearch.Count() == 1)
@@ -1085,10 +1088,18 @@ namespace MigAz.Migrators
                             storageAccountParentNode.Nodes.Add(tnStorageAccount);
                         }
 
+                        foreach (Azure.MigrationTarget.ManagedDisk targetManagedDisk in _AzureContextSourceASM.AzureRetriever.ArmTargetManagedDisks)
+                        {
+                            Azure.Arm.ManagedDisk armManagedDisk = (Azure.Arm.ManagedDisk) targetManagedDisk.SourceManagedDisk;
+                            TreeNode managedDiskParentNode = GetResourceGroupTreeNode(subscriptionNodeARM, armManagedDisk.ResourceGroup);
 
-                        //foreach (Azure.MigrationTarget.ManagedDisk targetManagedDisk in _AzureContextSourceASM.AzureRetriever.ArmTargetManagedDisks)
-                        //{
-                        //}
+                            TreeNode tnDisk = new TreeNode(targetManagedDisk.SourceName);
+                            tnDisk.Name = targetManagedDisk.SourceName;
+                            tnDisk.Tag = targetManagedDisk;
+                            tnDisk.ImageKey = "Disk";
+                            tnDisk.SelectedImageKey = "Disk";
+                            managedDiskParentNode.Nodes.Add(tnDisk);
+                        }
 
                         foreach (Azure.MigrationTarget.AvailabilitySet targetAvailabilitySet in _AzureContextSourceASM.AzureRetriever.ArmTargetAvailabilitySets)
                         {

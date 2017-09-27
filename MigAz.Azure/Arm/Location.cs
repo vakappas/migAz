@@ -1,5 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using MigAz.Azure.Interface;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MigAz.Core.Interface;
 
 namespace MigAz.Azure.Arm
 {
@@ -7,6 +10,7 @@ namespace MigAz.Azure.Arm
     {
         private AzureContext _AzureContext;
         private JToken _LocationToken;
+        private List<VMSize> _VMSizes;
 
         #region Constructors
 
@@ -16,6 +20,11 @@ namespace MigAz.Azure.Arm
         {
             this._AzureContext = _AzureContext;
             this._LocationToken = locationToken;
+        }
+
+        internal async Task InitializeChildrenAsync()
+        {
+            await _AzureContext.AzureRetriever.GetAzureARMLocationVMSizes(this);
         }
 
         #endregion
@@ -45,6 +54,12 @@ namespace MigAz.Azure.Arm
         public string Name
         {
             get { return (string)_LocationToken["name"]; }
+        }
+
+        public List<VMSize> VMSizes
+        {
+            get { return _VMSizes; }
+            set { _VMSizes = value; }
         }
 
         #endregion

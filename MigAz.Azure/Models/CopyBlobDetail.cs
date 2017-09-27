@@ -13,6 +13,7 @@ namespace MigAz.Azure.Models
         public string SourceContainer;
         public string SourceBlob;
         public string SourceKey;
+        public string DestinationSAResourceGroup;
         public string DestinationSA;
         public string DestinationContainer;
         public string DestinationBlob;

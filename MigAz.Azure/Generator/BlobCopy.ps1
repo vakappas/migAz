@@ -1,9 +1,6 @@
 ﻿# Parameters
 param (
     [Parameter(Mandatory = $true)] 
-    $ResourcegroupName,
-
-    [Parameter(Mandatory = $true)] 
     $DetailsFilePath,
 
     [ValidateSet("StartBlobCopy", "MonitorBlobCopy", "CancelBlobCopy")]
@@ -42,7 +39,7 @@ If ($StartType -eq "StartBlobCopy")
         $source_context = New-AzureStorageContext -StorageAccountName $copyblobdetail.SourceSA -StorageAccountKey $copyblobdetail.SourceKey -Environment $copyblobdetail.SourceEnvironment
     
         # Create destination storage account context
-        $copyblobdetail.DestinationKey = (Get-AzureRmStorageAccount -ResourceGroupName $resourcegroupname -Name $copyblobdetail.DestinationSA | Get-AzureRmStorageAccountKey).Value[0]
+        $copyblobdetail.DestinationKey = (Get-AzureRmStorageAccount -ResourceGroupName $copyblobdetail.DestinationSAResourceGroup -Name $copyblobdetail.DestinationSA | Get-AzureRmStorageAccountKey).Value[0]
         $destination_context = New-AzureStorageContext -StorageAccountName $copyblobdetail.DestinationSA -StorageAccountKey $copyblobdetail.DestinationKey
 
         # Create destination container if it does not exist
@@ -58,12 +55,12 @@ If ($StartType -eq "StartBlobCopy")
         $snap = $blob.ICloudBlob.CreateSnapshot()
         $copyblobdetail.SnapshotTime = $snap.SnapshotTime.DateTime.ToString()
         # Get just created snapshot
-        $snapshot = Get-AzureStorageBlob –Context $source_context -Container $copyblobdetail.SourceContainer -Prefix $copyblobdetail.SourceBlob | Where-Object  { $_.Name -eq $copyblobdetail.SourceBlob -and $_.SnapshotTime -eq $snap.SnapshotTime }
+        $snapshot = Get-AzureStorageBlob -Context $source_context -Container $copyblobdetail.SourceContainer -Prefix $copyblobdetail.SourceBlob | Where-Object  { $_.Name -eq $copyblobdetail.SourceBlob -and $_.SnapshotTime -eq $snap.SnapshotTime }
         # Convert to CloudBlob object type
         $snapshot = [Microsoft.WindowsAzure.Storage.Blob.CloudBlob] $snapshot.ICloudBlob
             
         # Initiate blob snapshot copy job
-        Start-AzureStorageBlobCopy –Context $source_context -ICloudBlob $snapshot -DestContext $destination_context -DestContainer $copyblobdetail.DestinationContainer -DestBlob $copyblobdetail.DestinationBlob -Verbose
+        Start-AzureStorageBlobCopy -Context $source_context -ICloudBlob $snapshot -DestContext $destination_context -DestContainer $copyblobdetail.DestinationContainer -DestBlob $copyblobdetail.DestinationBlob -Verbose
 
         # Updates $copyblobdetailsout array
         $copyblobdetail.StartTime = Get-Date -Format u

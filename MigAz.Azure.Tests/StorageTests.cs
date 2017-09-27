@@ -21,9 +21,9 @@ namespace MigAz.Tests
     public class StorageTests
     {
         [TestMethod]
-        public async Task asdf()
+        public async Task LoadASMObjectsFromSampleOfflineFile()
         {
-            string restResponseFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDocs\\NewTest1\\test.json");
+            string restResponseFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDocs\\NewTest1\\AsmObjectsOffline.json");
             AzureContext azureContextUSCommercial = await TestHelper.SetupAzureContext(restResponseFile);
             await azureContextUSCommercial.AzureRetriever.BindAsmResources();
 
@@ -35,21 +35,54 @@ namespace MigAz.Tests
             {
                 artifacts.StorageAccounts.Add(s);
             }
-            //// todo artifacts.StorageAccounts.Add(await azureContextUSCommercialRetriever.GetAzureAsmStorageAccount("mystorage"));
+
             await templateGenerator.UpdateArtifacts(artifacts);
             Assert.IsFalse(templateGenerator.HasErrors, "Template Generation cannot occur as the are error(s).");
 
-            JObject templateJson = JObject.Parse(await templateGenerator.GetTemplateString());
+            await templateGenerator.GenerateStreams();
 
+            JObject templateJson = JObject.Parse(await templateGenerator.GetTemplateString());
 
             Assert.AreEqual(1, templateJson["resources"].Children().Count());
 
-            //var resource = templateJson["resources"].Single();
-            //Assert.AreEqual("Microsoft.Storage/storageAccounts", resource["type"].Value<string>());
-            //Assert.AreEqual("mystoragev2", resource["name"].Value<string>());
-            //Assert.AreEqual((await azureContextUSCommercialRetriever.GetAzureASMLocations())[0].Name, resource["location"].Value<string>());
-            //Assert.AreEqual("Standard_LRS", resource["properties"]["accountType"].Value<string>());
+            var resource = templateJson["resources"].Single();
+            Assert.AreEqual("Microsoft.Storage/storageAccounts", resource["type"].Value<string>());
+            Assert.AreEqual("asmtest8155v2", resource["name"].Value<string>());
+            Assert.AreEqual("[resourceGroup().location]", resource["location"].Value<string>());
+            Assert.AreEqual("Standard_LRS", resource["properties"]["accountType"].Value<string>());
+        }
 
+        [TestMethod]
+        public async Task LoadARMObjectsFromSampleOfflineFile()
+        {
+            string restResponseFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDocs\\NewTest1\\ArmObjectsOffline.json");
+            AzureContext azureContextUSCommercial = await TestHelper.SetupAzureContext(restResponseFile);
+            await azureContextUSCommercial.AzureRetriever.BindArmResources();
+
+            AzureGenerator templateGenerator = await TestHelper.SetupTemplateGenerator(azureContextUSCommercial);
+
+            var artifacts = new ExportArtifacts();
+            artifacts.ResourceGroup = await TestHelper.GetTargetResourceGroup(azureContextUSCommercial);
+
+            foreach (Azure.MigrationTarget.StorageAccount s in azureContextUSCommercial.AzureRetriever.ArmTargetStorageAccounts)
+            {
+                artifacts.StorageAccounts.Add(s);
+            }
+
+            await templateGenerator.UpdateArtifacts(artifacts);
+            Assert.IsFalse(templateGenerator.HasErrors, "Template Generation cannot occur as the are error(s).");
+
+            await templateGenerator.GenerateStreams();
+
+            JObject templateJson = JObject.Parse(await templateGenerator.GetTemplateString());
+
+            Assert.AreEqual(2, templateJson["resources"].Children().Count());
+
+            var resource = templateJson["resources"].First();
+            Assert.AreEqual("Microsoft.Storage/storageAccounts", resource["type"].Value<string>());
+            Assert.AreEqual("manageddiskdiag857v2", resource["name"].Value<string>());
+            Assert.AreEqual("[resourceGroup().location]", resource["location"].Value<string>());
+            Assert.AreEqual("Standard_LRS", resource["properties"]["accountType"].Value<string>());
         }
     }
 }

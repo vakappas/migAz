@@ -3,6 +3,7 @@ using MigAz.Azure.Interface;
 using MigAz.Core.Interface;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Threading.Tasks;
 
 namespace MigAz.Azure.Arm
 {
@@ -19,6 +20,11 @@ namespace MigAz.Azure.Arm
             _AzureSubscription = azureSubscription;
         }
 
+        public async Task InitializeChildrenAsync(AzureContext azureContext)
+        {
+            this.Location = await azureContext.AzureRetriever.GetAzureARMLocation(this.LocationString);
+        }
+
         private ResourceGroup() { }
 
         public AzureSubscription AzureSubscription
@@ -27,8 +33,14 @@ namespace MigAz.Azure.Arm
         }
 
         public string Name => (string)_ResourceGroupJson["name"];
-        public string Location => (string)_ResourceGroupJson["location"];
+        private string LocationString => (string)_ResourceGroupJson["location"];
         public string Id => (string)_ResourceGroupJson["id"];
+
+        public Location Location
+        {
+            get;
+            private set;
+        }
 
         public override string ToString()
         {

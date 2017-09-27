@@ -16,9 +16,9 @@ namespace MigAz.Azure.Arm
         {
         }
 
-        public async Task InitializeChildrenAsync(AzureContext azureContext)
+        public new async Task InitializeChildrenAsync(AzureContext azureContext)
         {
-
+            await base.InitializeChildrenAsync(azureContext);
         }
 
         #region Properties

@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using MigAz.Azure.Interface;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace MigAz.Azure.UserControls
 {
@@ -31,7 +33,8 @@ namespace MigAz.Azure.UserControls
                 cboTargetLocation.Items.Clear();
                 if (azureContext.AzureRetriever.SubscriptionContext != null)
                 {
-                    foreach (Azure.Arm.Location armLocation in await azureContext.AzureRetriever.GetAzureARMLocations())
+                    List<Arm.Location> armLocations = await azureContext.AzureRetriever.GetAzureARMLocations();
+                    foreach (Azure.Arm.Location armLocation in armLocations.OrderBy(a => a.DisplayName))
                     {
                         cboTargetLocation.Items.Add(armLocation);
                     }
@@ -85,7 +88,7 @@ namespace MigAz.Azure.UserControls
         {
             ComboBox cmbSender = (ComboBox)sender;
 
-            _ResourceGroup.TargetLocation = (ILocation) cmbSender.SelectedItem;
+            _ResourceGroup.TargetLocation = (Arm.Location) cmbSender.SelectedItem;
 
             PropertyChanged();
         }

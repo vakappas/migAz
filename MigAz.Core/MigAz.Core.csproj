@@ -50,6 +50,7 @@
     <Compile Include="Interface\IDisk.cs" />
     <Compile Include="Interface\IExportArtifacts.cs" />
     <Compile Include="Interface\ILoadBalancer.cs" />
+    <Compile Include="Interface\ILocation.cs" />
     <Compile Include="Interface\ILogProvider.cs" />
     <Compile Include="Interface\IMigrationSubnet.cs" />
     <Compile Include="Interface\IMigrationTarget.cs" />

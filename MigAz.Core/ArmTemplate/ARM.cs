@@ -434,7 +434,7 @@ namespace MigAz.Core.ArmTemplate
         public string name;
         public string osType;
         public Vhd vhd;
-        public ManagedDisk managedDisk;
+        public Reference managedDisk;
         public string caching;
         public string createOption;
     }
@@ -443,7 +443,7 @@ namespace MigAz.Core.ArmTemplate
     {
         public string name;
         public Vhd vhd;
-        public ManagedDisk managedDisk;
+        public Reference managedDisk;
         public string caching;
         public string createOption;
         public long diskSizeGB;
@@ -460,9 +460,13 @@ namespace MigAz.Core.ArmTemplate
         public ManagedDisk(Guid executionGuid) : base(executionGuid)
         {
         }
+    }
 
-        public string storageAccountType;
-        public string id;
+    public class ManagedDisk_Properties
+    {
+        public string creationData = "Empty";
+        public string storageAccountType = "Standard_LRS";
+        public int diskSizeGb = 128;
     }
 
     public class Snapshot : Disk

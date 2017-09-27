@@ -9,7 +9,8 @@ namespace MigAz.Azure.Arm
 {
     public class ArmResource
     {
-        private JToken _ResourceToken = null;
+        private JToken _ResourceToken;
+        private Location _Location;
 
         private ArmResource() { }
 
@@ -17,19 +18,30 @@ namespace MigAz.Azure.Arm
         {
             _ResourceToken = resourceToken;
         }
+        internal virtual async Task InitializeChildrenAsync(AzureContext azureContext)
+        {
+            this.ResourceGroup = await azureContext.AzureRetriever.GetAzureARMResourceGroup(this.Id);
+            this.Location = await azureContext.AzureRetriever.GetAzureARMLocation(this.LocationString);
+            return;
+        }
 
         public JToken ResourceToken => _ResourceToken;
         public string Name => (string)_ResourceToken["name"];
         public string Id => (string)_ResourceToken["id"];
-        public string Location => (string)_ResourceToken["location"];
+        private string LocationString => (string)_ResourceToken["location"];
 
-        public ResourceGroup ResourceGroup { get; set; }
-
-        internal virtual async Task InitializeChildrenAsync(AzureContext azureContext)
+        public Location Location
         {
-            this.ResourceGroup = await azureContext.AzureRetriever.GetAzureARMResourceGroup(this.Id);
-            return;
+            get
+            {
+                return _Location;
+            }
+            private set
+            {
+                _Location = value;
+            }
         }
 
+        public ResourceGroup ResourceGroup { get; internal set; }
     }
 }

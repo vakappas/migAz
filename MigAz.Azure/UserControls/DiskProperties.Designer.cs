@@ -127,7 +127,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(11, 250);
+            this.label5.Location = new System.Drawing.Point(11, 158);
             this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(61, 13);
@@ -138,7 +138,7 @@
             // 
             this.rbExistingARMStorageAccount.AutoSize = true;
             this.rbExistingARMStorageAccount.Enabled = false;
-            this.rbExistingARMStorageAccount.Location = new System.Drawing.Point(103, 293);
+            this.rbExistingARMStorageAccount.Location = new System.Drawing.Point(103, 201);
             this.rbExistingARMStorageAccount.Margin = new System.Windows.Forms.Padding(2);
             this.rbExistingARMStorageAccount.Name = "rbExistingARMStorageAccount";
             this.rbExistingARMStorageAccount.Size = new System.Drawing.Size(173, 17);
@@ -150,7 +150,7 @@
             // rbStorageAccountInMigration
             // 
             this.rbStorageAccountInMigration.AutoSize = true;
-            this.rbStorageAccountInMigration.Location = new System.Drawing.Point(103, 271);
+            this.rbStorageAccountInMigration.Location = new System.Drawing.Point(103, 179);
             this.rbStorageAccountInMigration.Margin = new System.Windows.Forms.Padding(2);
             this.rbStorageAccountInMigration.Name = "rbStorageAccountInMigration";
             this.rbStorageAccountInMigration.Size = new System.Drawing.Size(151, 17);
@@ -162,7 +162,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(11, 317);
+            this.label7.Location = new System.Drawing.Point(11, 225);
             this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(81, 13);
@@ -174,7 +174,7 @@
             this.cmbTargetStorage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbTargetStorage.Enabled = false;
             this.cmbTargetStorage.FormattingEnabled = true;
-            this.cmbTargetStorage.Location = new System.Drawing.Point(103, 315);
+            this.cmbTargetStorage.Location = new System.Drawing.Point(103, 223);
             this.cmbTargetStorage.Margin = new System.Windows.Forms.Padding(2);
             this.cmbTargetStorage.Name = "cmbTargetStorage";
             this.cmbTargetStorage.Size = new System.Drawing.Size(198, 21);
@@ -216,18 +216,18 @@
             // 
             // txtTargetDiskName
             // 
-            this.txtTargetDiskName.Location = new System.Drawing.Point(103, 154);
+            this.txtTargetDiskName.Location = new System.Drawing.Point(103, 258);
             this.txtTargetDiskName.Margin = new System.Windows.Forms.Padding(2);
             this.txtTargetDiskName.Name = "txtTargetDiskName";
             this.txtTargetDiskName.Size = new System.Drawing.Size(196, 20);
-            this.txtTargetDiskName.TabIndex = 0;
+            this.txtTargetDiskName.TabIndex = 4;
             this.txtTargetDiskName.TextChanged += new System.EventHandler(this.txtTargetDiskName_TextChanged);
             this.txtTargetDiskName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtTargetDiskName_KeyPress);
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(11, 155);
+            this.label9.Location = new System.Drawing.Point(11, 259);
             this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(62, 13);
@@ -237,12 +237,11 @@
             // rbManagedDisk
             // 
             this.rbManagedDisk.AutoSize = true;
-            this.rbManagedDisk.Enabled = false;
-            this.rbManagedDisk.Location = new System.Drawing.Point(103, 249);
+            this.rbManagedDisk.Location = new System.Drawing.Point(103, 157);
             this.rbManagedDisk.Margin = new System.Windows.Forms.Padding(2);
             this.rbManagedDisk.Name = "rbManagedDisk";
             this.rbManagedDisk.Size = new System.Drawing.Size(94, 17);
-            this.rbManagedDisk.TabIndex = 25;
+            this.rbManagedDisk.TabIndex = 0;
             this.rbManagedDisk.Text = "Managed Disk";
             this.rbManagedDisk.UseVisualStyleBackColor = true;
             this.rbManagedDisk.CheckedChanged += new System.EventHandler(this.rbManagedDIsk_CheckedChanged);
@@ -250,7 +249,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(11, 178);
+            this.label10.Location = new System.Drawing.Point(11, 282);
             this.label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(62, 13);
@@ -259,11 +258,11 @@
             // 
             // txtBlobName
             // 
-            this.txtBlobName.Location = new System.Drawing.Point(103, 176);
+            this.txtBlobName.Location = new System.Drawing.Point(103, 280);
             this.txtBlobName.Margin = new System.Windows.Forms.Padding(2);
             this.txtBlobName.Name = "txtBlobName";
             this.txtBlobName.Size = new System.Drawing.Size(196, 20);
-            this.txtBlobName.TabIndex = 26;
+            this.txtBlobName.TabIndex = 5;
             this.txtBlobName.TextChanged += new System.EventHandler(this.txtBlobName_TextChanged);
             this.txtBlobName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtTargetDiskName_KeyPress);
             // 
@@ -290,22 +289,23 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(11, 202);
+            this.label11.Location = new System.Drawing.Point(11, 306);
             this.label11.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(54, 13);
+            this.label11.Size = new System.Drawing.Size(30, 13);
             this.label11.TabIndex = 31;
-            this.label11.Text = "Size (GB):";
+            this.label11.Text = "Size:";
             // 
             // txtTargetSize
             // 
-            this.txtTargetSize.Location = new System.Drawing.Point(103, 200);
+            this.txtTargetSize.Location = new System.Drawing.Point(103, 304);
             this.txtTargetSize.Margin = new System.Windows.Forms.Padding(2);
             this.txtTargetSize.MaxLength = 4;
             this.txtTargetSize.Name = "txtTargetSize";
             this.txtTargetSize.Size = new System.Drawing.Size(53, 20);
-            this.txtTargetSize.TabIndex = 30;
+            this.txtTargetSize.TabIndex = 6;
             this.txtTargetSize.TextChanged += new System.EventHandler(this.txtTargetSize_TextChanged);
+            this.txtTargetSize.Validating += new System.ComponentModel.CancelEventHandler(this.txtTargetSize_Validating);
             // 
             // DiskProperties
             // 
@@ -337,7 +337,7 @@
             this.Controls.Add(this.label1);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "DiskProperties";
-            this.Size = new System.Drawing.Size(320, 411);
+            this.Size = new System.Drawing.Size(320, 334);
             this.ResumeLayout(false);
             this.PerformLayout();
 

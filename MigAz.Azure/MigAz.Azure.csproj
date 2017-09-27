@@ -81,7 +81,9 @@
     <Compile Include="Arm\VirtualMachine.cs" />
     <Compile Include="Arm\VirtualNetwork.cs" />
     <Compile Include="Arm\VirtualNetworkGateway.cs" />
+    <Compile Include="Arm\VMSize.cs" />
     <Compile Include="Asm\NetworkInterfaceIpConfiguration.cs" />
+    <Compile Include="Asm\RoleSize.cs" />
     <Compile Include="AzureRestRequest.cs" />
     <Compile Include="AzureRestResponse.cs" />
     <Compile Include="AzureSubscriptionResourceCache.cs" />
@@ -109,6 +111,7 @@
     <Compile Include="MigrationTarget\InboundNatRule.cs" />
     <Compile Include="MigrationTarget\LoadBalancer.cs" />
     <Compile Include="MigrationTarget\LoadBalancingRule.cs" />
+    <Compile Include="MigrationTarget\ManagedDisk.cs" />
     <Compile Include="MigrationTarget\NetworkInterface.cs" />
     <Compile Include="MigrationTarget\NetworkInterfaceIpConfiguration.cs" />
     <Compile Include="MigrationTarget\NetworkSecurityGroup.cs" />
@@ -170,7 +173,6 @@
     <Compile Include="AzureTenant.cs" />
     <Compile Include="AzureTokenProvider.cs" />
     <Compile Include="Generator\AzureGenerator.cs" />
-    <Compile Include="Interface\ILocation.cs" />
     <Compile Include="Interface\ITokenProvider.cs" />
     <Compile Include="Models\CloudServiceVM.cs" />
     <Compile Include="Models\CopyBlobDetail.cs" />
@@ -261,6 +263,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <EmbeddedResource Include="Generator\BlobCopy.ps1" />
+    <None Include="Generator\BlobCopy_Delete_Snapshots.ps1" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
